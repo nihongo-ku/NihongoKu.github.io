@@ -832,17 +832,36 @@ function showScreen(s) {
 // SUPABASE PROGRESS
 // ════════════════════════════════════════
 async function loadProgress() {
-  const uid=currentUser.id;
-  const{data}=await sb.from('user_progress').select('*').eq('user_id',uid).single();
-  if(data){
-    learnedH=data.learned_hiragana||[];
-    learnedK=data.learned_katakana||[];
-    learnedD=data.learned_dakuon||[];
-    learnedVocab=data.learned_vocab||{};
-    userProgress={xp:data.xp||0,streak:data.streak||0,quizDone:data.quiz_done||0};
-  } else {
-    userProgress={xp:0,streak:0,quizDone:0};
-    await sb.from('user_progress').insert({user_id:uid,learned_hiragana:[],learned_katakana:[],learned_dakuon:[],learned_vocab:{},xp:0,streak:0,quiz_done:0,last_login:new Date().toISOString()});
+  const uid = currentUser.id;
+  try {
+    const { data, error } = await sb.from('user_progress')
+      .select('*').eq('user_id', uid).single();
+    
+    if (data && !error) {
+      learnedH = data.learned_hiragana || [];
+      learnedK = data.learned_katakana || [];
+      learnedD = data.learned_dakuon || [];
+      learnedVocab = data.learned_vocab || {};
+      userProgress = {
+        xp: data.xp || 0,
+        streak: data.streak || 0,
+        quizDone: data.quiz_done || 0
+      };
+    } else {
+      // Data belum ada, insert default
+      userProgress = { xp: 0, streak: 0, quizDone: 0 };
+      await sb.from('user_progress').insert({
+        user_id: uid,
+        learned_hiragana: [], learned_katakana: [],
+        learned_dakuon: [], learned_vocab: {},
+        xp: 0, streak: 0, quiz_done: 0,
+        last_login: new Date().toISOString()
+      });
+    }
+  } catch(err) {
+    // Gagal load progress → pakai default, jangan crash
+    console.warn('loadProgress gagal, pakai default:', err);
+    userProgress = { xp: 0, streak: 0, quizDone: 0 };
   }
 }
 async function saveProgress() {
@@ -1155,25 +1174,37 @@ function closeModal(e) {
 // INIT
 // ════════════════════════════════════════
 async function initApp(user) {
-  currentUser=user;
+  currentUser = user;
   showScreen('loading');
-  await loadProgress();
-  updateSidebarUser();
-  buildKanaGrid(HIRAGANA,'hiragana-grid','H',learnedH);
-  buildKanaGrid(KATAKANA,'katakana-grid','K',learnedK);
-  buildDakuon();
-  fcCards=[...VOCAB[fcCategory]];
-  buildFcCats(); loadFc();
-  buildGrammar();
-  startQuiz();
-  buildKamusCats(); renderKanji();
-  showScreen('app');
+  try {
+    await loadProgress();
+    updateSidebarUser();
+    buildKanaGrid(HIRAGANA, 'hiragana-grid', 'H', learnedH);
+    buildKanaGrid(KATAKANA, 'katakana-grid', 'K', learnedK);
+    buildDakuon();
+    fcCards = [...VOCAB[fcCategory]];
+    buildFcCats(); loadFc();
+    buildGrammar();
+    startQuiz();
+    buildKamusCats(); renderKanji();
+    showScreen('app');
+  } catch(err) {
+    console.error('initApp error:', err);
+    // Fallback: reset progress lokal dan tetap tampilkan app
+    learnedH = []; learnedK = []; learnedD = []; learnedVocab = {};
+    userProgress = { xp: 0, streak: 0, quizDone: 0 };
+    updateSidebarUser();
+    buildKanaGrid(HIRAGANA, 'hiragana-grid', 'H', learnedH);
+    buildKanaGrid(KATAKANA, 'katakana-grid', 'K', learnedK);
+    buildDakuon();
+    fcCards = [...VOCAB[fcCategory]];
+    buildFcCats(); loadFc();
+    buildGrammar();
+    startQuiz();
+    buildKamusCats(); renderKanji();
+    showScreen('app');
+  }
 }
-
-sb.auth.onAuthStateChange(async(event,session)=>{
-  if(session?.user) await initApp(session.user);
-  else showScreen('auth');
-});
 </script>
 </body>
 </html>
