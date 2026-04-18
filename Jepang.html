@@ -1221,6 +1221,38 @@ async function initApp(user) {
     showScreen('app');
   }
 }
+async function saveProgress() {
+  if(!currentUser) return;
+  try {
+    await sb.from('user_progress').upsert({
+      user_id: currentUser.id,
+      learned_hiragana: learnedH,
+      learned_katakana: learnedK,
+      learned_dakuon: learnedD,
+      learned_vocab: learnedVocab,
+      xp: userProgress.xp || 0,
+      streak: userProgress.streak || 0,
+      quiz_done: userProgress.quizDone || 0,
+      last_login: new Date().toISOString(),
+    }, { onConflict: 'user_id' });
+    flashSave();
+  } catch(err) {
+    console.warn('saveProgress gagal:', err);
+  }
+}
+  
+function scheduleSave() { clearTimeout(saveTimer); saveTimer = setTimeout(saveProgress, 1500); }
+function flashSave() {
+  const el = document.getElementById('save-indicator');
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2000);
+}
+
+// ← INI YANG HILANG, WAJIB ADA
+sb.auth.onAuthStateChange(async (event, session) => {
+  if (session?.user) await initApp(session.user);
+  else showScreen('auth');
+});
 </script>
 </body>
 </html>
