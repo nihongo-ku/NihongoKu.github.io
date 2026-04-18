@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nihongo Belajar — JLPT N5</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Nunito:wght@400;600;700&display=swap');
+
+  :root {
+    --bg: #0f1117;
+    --bg2: #1a1d27;
+    --bg3: #222638;
+    --card: #1e2235;
+    --border: #2e3350;
+    --text: #e8eaf0;
+    --muted: #7b82a0;
+    --accent: #6c8fff;
+    --accent2: #a78bfa;
+    --green: #4ade80;
+    --red: #f87171;
+    --yellow: #fbbf24;
+    --teal: #2dd4bf;
+    --pink: #f472b6;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+  .jp { font-family: 'Noto Sans JP', sans-serif; }
+
+  /* ── LAYOUT ── */
+  .shell { display: flex; min-height: 100vh; }
+  .sidebar {
+    width: 220px; flex-shrink: 0;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    padding: 20px 0;
+    position: sticky; top: 0; height: 100vh; overflow-y: auto;
+  }
+  .main { flex: 1; overflow-y: auto; }
+
+  /* ── SIDEBAR ── */
+  .logo { padding: 0 20px 20px; border-bottom: 1px solid var(--border); }
+  .logo-jp { font-size: 28px; font-weight: 700; color: var(--accent); font-family: 'Noto Sans JP', sans-serif; }
+  .logo-en { font-size: 11px; color: var(--muted); margin-top: 2px; letter-spacing: .06em; }
+  .nav-section { margin: 16px 0 4px; padding: 0 20px; font-size: 10px; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 20px; cursor: pointer;
+    font-size: 13px; font-weight: 600; color: var(--muted);
+    border-left: 3px solid transparent;
+    transition: all .15s;
+  }
+  .nav-item:hover { color: var(--text); background: rgba(255,255,255,.04); }
+  .nav-item.active { color: var(--accent); border-left-color: var(--accent); background: rgba(108,143,255,.08); }
+  .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+  .xp-block { margin-top: auto; padding: 16px 20px; border-top: 1px solid var(--border); }
+  .xp-top { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+  .xp-bar { height: 6px; background: var(--bg3); border-radius: 3px; overflow: hidden; }
+  .xp-fill { height: 100%; width: 68%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 3px; }
+  .streak-badge { display: inline-flex; align-items: center; gap: 4px; background: rgba(251,191,36,.12); color: var(--yellow); font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 20px; margin-top: 8px; }
+
+  /* ── PAGES ── */
+  .page { display: none; padding: 24px; max-width: 900px; }
+  .page.active { display: block; }
+  .page-title { font-size: 22px; font-weight: 700; margin-bottom: 20px; }
+  .page-title span { color: var(--accent); }
+
+  /* ── CARDS ── */
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px; }
+  .card + .card { margin-top: 14px; }
+  .card-label { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: .07em; text-transform: uppercase; margin-bottom: 12px; }
+
+  /* ── DASHBOARD ── */
+  .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 14px; }
+  .stat-box { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+  .stat-num { font-size: 28px; font-weight: 700; }
+  .stat-lbl { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .mod-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .mod-item { background: var(--bg3); border-radius: 10px; padding: 12px 14px; cursor: pointer; transition: background .15s; border: 1px solid transparent; }
+  .mod-item:hover { border-color: var(--accent); }
+  .mod-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .mod-name { font-size: 13px; font-weight: 700; }
+  .mod-pct { font-size: 12px; color: var(--muted); }
+  .prog-bar { height: 5px; background: var(--bg2); border-radius: 3px; overflow: hidden; }
+  .prog-fill { height: 100%; border-radius: 3px; }
+  .today-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-top: 4px; }
+  .today-card { background: var(--bg3); border-radius: 10px; padding: 12px; cursor: pointer; border: 1px solid var(--border); transition: all .15s; }
+  .today-card:hover { border-color: var(--accent2); transform: translateY(-2px); }
+  .today-tag { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; display: inline-block; margin-bottom: 6px; }
+  .tag-new { background: rgba(108,143,255,.18); color: var(--accent); }
+  .tag-review { background: rgba(74,222,128,.15); color: var(--green); }
+  .tag-quiz { background: rgba(251,191,36,.15); color: var(--yellow); }
+  .today-jp { font-size: 26px; font-family: 'Noto Sans JP', sans-serif; font-weight: 700; }
+  .today-rom { font-size: 11px; color: var(--muted); }
+  .today-id { font-size: 12px; color: var(--text); margin-top: 3px; }
+
+  /* ── HIRAGANA / KATAKANA ── */
+  .kana-grid { display: grid; grid-template-columns: repeat(10,1fr); gap: 6px; }
+  .kana-cell {
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 8px; padding: 8px 4px;
+    text-align: center; cursor: pointer;
+    transition: all .15s;
+  }
+  .kana-cell:hover { border-color: var(--accent); background: rgba(108,143,255,.12); }
+  .kana-cell.learned { border-color: var(--green); background: rgba(74,222,128,.08); }
+  .kana-jp { font-size: 20px; font-family: 'Noto Sans JP', sans-serif; font-weight: 500; }
+  .kana-rom { font-size: 10px; color: var(--muted); margin-top: 2px; }
+  .kana-row-label { font-size: 10px; color: var(--muted); display: flex; align-items: center; justify-content: center; font-weight: 700; }
+  .tab-row { display: flex; gap: 8px; margin-bottom: 18px; }
+  .tab-btn { padding: 8px 18px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; transition: all .15s; }
+  .tab-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .kana-section { display: none; }
+  .kana-section.active { display: block; }
+  .kana-row-group { margin-bottom: 8px; display: grid; grid-template-columns: 36px repeat(5,1fr); gap: 6px; align-items: center; }
+
+  /* ── FLASHCARD ── */
+  .fc-wrap { display: flex; flex-direction: column; align-items: center; gap: 18px; padding: 10px 0; }
+  .fc-card {
+    width: 100%; max-width: 420px;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 20px; padding: 44px 32px;
+    text-align: center; cursor: pointer;
+    min-height: 200px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+    transition: transform .1s;
+  }
+  .fc-card:active { transform: scale(.98); }
+  .fc-main { font-size: 56px; font-family: 'Noto Sans JP', sans-serif; font-weight: 700; color: var(--text); }
+  .fc-rom { font-size: 18px; color: var(--accent); font-weight: 600; }
+  .fc-meaning { font-size: 15px; color: var(--text); }
+  .fc-example { font-size: 13px; color: var(--muted); font-family: 'Noto Sans JP', sans-serif; }
+  .fc-hint { font-size: 12px; color: var(--muted); }
+  .fc-btns { display: flex; gap: 12px; width: 100%; max-width: 420px; }
+  .fc-btn { flex: 1; padding: 12px; border-radius: 12px; border: none; font-family: 'Nunito', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; transition: all .15s; }
+  .fc-btn:hover { transform: translateY(-2px); }
+  .btn-lupa { background: rgba(248,113,113,.15); color: var(--red); border: 1px solid rgba(248,113,113,.3); }
+  .btn-agak { background: rgba(251,191,36,.12); color: var(--yellow); border: 1px solid rgba(251,191,36,.25); }
+  .btn-hafal { background: rgba(74,222,128,.12); color: var(--green); border: 1px solid rgba(74,222,128,.25); }
+  .fc-prog { font-size: 12px; color: var(--muted); }
+  .fc-cat-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .cat-pill { padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 700; cursor: pointer; transition: all .15s; }
+  .cat-pill.active { background: var(--accent2); border-color: var(--accent2); color: #fff; }
+
+  /* ── QUIZ ── */
+  .quiz-question { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+  .quiz-jp { font-size: 48px; font-family: 'Noto Sans JP', sans-serif; font-weight: 700; text-align: center; margin: 20px 0; }
+  .quiz-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+  .quiz-opt { padding: 14px 18px; background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all .15s; text-align: left; font-family: 'Nunito', sans-serif; color: var(--text); }
+  .quiz-opt:hover { border-color: var(--accent); }
+  .quiz-opt.correct { border-color: var(--green); background: rgba(74,222,128,.12); color: var(--green); }
+  .quiz-opt.wrong { border-color: var(--red); background: rgba(248,113,113,.1); color: var(--red); }
+  .quiz-result { text-align: center; padding: 20px; }
+  .quiz-score { font-size: 48px; font-weight: 700; color: var(--accent); }
+  .quiz-meta { font-size: 14px; color: var(--muted); margin-top: 6px; }
+  .btn-primary { padding: 12px 28px; background: var(--accent); border: none; border-radius: 10px; color: #fff; font-family: 'Nunito', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 16px; transition: all .15s; }
+  .btn-primary:hover { background: #8faaff; }
+
+  /* ── GRAMMAR ── */
+  .grammar-item { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; margin-bottom: 12px; }
+  .grammar-pattern { font-size: 16px; font-weight: 700; color: var(--accent2); font-family: 'Noto Sans JP', sans-serif; margin-bottom: 6px; }
+  .grammar-label { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: .06em; margin-bottom: 4px; }
+  .grammar-desc { font-size: 13px; color: var(--text); margin-bottom: 10px; line-height: 1.6; }
+  .grammar-example { background: var(--bg3); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 10px 14px; margin-top: 8px; }
+  .grammar-ex-jp { font-family: 'Noto Sans JP', sans-serif; font-size: 15px; font-weight: 500; }
+  .grammar-ex-rom { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .grammar-ex-id { font-size: 13px; color: var(--text); margin-top: 3px; }
+
+  /* ── MOBILE RESPONSIVE ── */
+  @media (max-width: 640px) {
+    .sidebar { width: 60px; }
+    .sidebar .logo-en, .sidebar .nav-item span:last-child, .sidebar .nav-section, .sidebar .xp-top, .sidebar .streak-badge { display: none; }
+    .logo-jp { font-size: 20px; }
+    .nav-item { padding: 12px; justify-content: center; }
+    .nav-icon { width: auto; }
+    .stat-grid { grid-template-columns: 1fr 1fr; }
+    .today-grid { grid-template-columns: 1fr 1fr; }
+    .kana-grid { grid-template-columns: repeat(5,1fr); }
+    .quiz-options { grid-template-columns: 1fr; }
+    .fc-main { font-size: 44px; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- ═══ SIDEBAR ═══ -->
+<nav class="sidebar">
+  <div class="logo">
+    <div class="logo-jp">日本語</div>
+    <div class="logo-en">NIHONGO BELAJAR</div>
+  </div>
+  <div class="nav-section">Menu</div>
+  <div class="nav-item active" onclick="nav('dashboard',this)"><span class="nav-icon">⊞</span><span>Dashboard</span></div>
+  <div class="nav-item" onclick="nav('hiragana',this)"><span class="nav-icon">あ</span><span>Hiragana</span></div>
+  <div class="nav-item" onclick="nav('katakana',this)"><span class="nav-icon">ア</span><span>Katakana</span></div>
+  <div class="nav-item" onclick="nav('flashcard',this)"><span class="nav-icon">◈</span><span>Flashcard</span></div>
+  <div class="nav-item" onclick="nav('grammar',this)"><span class="nav-icon">≡</span><span>Grammar</span></div>
+  <div class="nav-item" onclick="nav('quiz',this)"><span class="nav-icon">✎</span><span>Quiz Harian</span></div>
+  <div class="xp-block">
+    <div class="xp-top"><span>XP: 680</span><span>/ 1000</span></div>
+    <div class="xp-bar"><div class="xp-fill"></div></div>
+    <div class="streak-badge">🔥 7 hari berturut</div>
+  </div>
+</nav>
+
+<!-- ═══ MAIN ═══ -->
+<main class="main">
+
+<!-- DASHBOARD -->
+<div class="page active" id="page-dashboard">
+  <div class="page-title">Dashboard <span>N5</span></div>
+  <div class="stat-grid">
+    <div class="stat-box"><div class="stat-num" style="color:var(--accent)">142</div><div class="stat-lbl">Kosakata dipelajari</div></div>
+    <div class="stat-box"><div class="stat-num" style="color:var(--teal)">58</div><div class="stat-lbl">Kanji diketahui</div></div>
+    <div class="stat-box"><div class="stat-num" style="color:var(--pink)">7</div><div class="stat-lbl">Hari streak</div></div>
+  </div>
+  <div class="card">
+    <div class="card-label">Progress Modul N5</div>
+    <div class="mod-grid">
+      <div class="mod-item" onclick="nav('hiragana',document.querySelector('.nav-item:nth-child(4)'))">
+        <div class="mod-head"><span class="mod-name">Hiragana</span><span class="mod-pct">100%</span></div>
+        <div class="prog-bar"><div class="prog-fill" style="width:100%;background:var(--green)"></div></div>
+      </div>
+      <div class="mod-item" onclick="nav('katakana',document.querySelector('.nav-item:nth-child(5)'))">
+        <div class="mod-head"><span class="mod-name">Katakana</span><span class="mod-pct">72%</span></div>
+        <div class="prog-bar"><div class="prog-fill" style="width:72%;background:var(--teal)"></div></div>
+      </div>
+      <div class="mod-item" onclick="nav('flashcard',document.querySelector('.nav-item:nth-child(6)'))">
+        <div class="mod-head"><span class="mod-name">Kosakata</span><span class="mod-pct">48%</span></div>
+        <div class="prog-bar"><div class="prog-fill" style="width:48%;background:var(--accent)"></div></div>
+      </div>
+      <div class="mod-item" onclick="nav('grammar',document.querySelector('.nav-item:nth-child(7)'))">
+        <div class="mod-head"><span class="mod-name">Grammar</span><span class="mod-pct">35%</span></div>
+        <div class="prog-bar"><div class="prog-fill" style="width:35%;background:var(--accent2)"></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:14px">
+    <div class="card-label">Pelajaran Hari Ini</div>
+    <div class="today-grid">
+      <div class="today-card" onclick="nav('flashcard',document.querySelector('.nav-item:nth-child(6)'))">
+        <span class="today-tag tag-new">Baru</span>
+        <div class="today-jp jp">会社</div>
+        <div class="today-rom">kaisha</div>
+        <div class="today-id">Perusahaan</div>
+      </div>
+      <div class="today-card" onclick="nav('flashcard',document.querySelector('.nav-item:nth-child(6)'))">
+        <span class="today-tag tag-review">Ulang SRS</span>
+        <div class="today-jp jp">仕事</div>
+        <div class="today-rom">shigoto</div>
+        <div class="today-id">Pekerjaan</div>
+      </div>
+      <div class="today-card" onclick="nav('quiz',document.querySelector('.nav-item:nth-child(8)'))">
+        <span class="today-tag tag-quiz">Quiz</span>
+        <div class="today-jp" style="font-size:18px;margin-top:4px;font-weight:700">Quiz N5</div>
+        <div class="today-rom">10 soal</div>
+        <div class="today-id">Grammar + Vocab</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HIRAGANA -->
+<div class="page" id="page-hiragana">
+  <div class="page-title">Hiragana <span>ひらがな</span></div>
+  <p style="color:var(--muted);font-size:13px;margin-bottom:18px">Klik huruf untuk menandai sudah hafal. Hiragana adalah aksara dasar bahasa Jepang — wajib dikuasai pertama kali.</p>
+  <div id="hiragana-grid"></div>
+</div>
+
+<!-- KATAKANA -->
+<div class="page" id="page-katakana">
+  <div class="page-title">Katakana <span>カタカナ</span></div>
+  <p style="color:var(--muted);font-size:13px;margin-bottom:18px">Katakana digunakan untuk kata serapan asing. Contoh: コーヒー (kōhī) = kopi, テレビ (terebi) = televisi.</p>
+  <div id="katakana-grid"></div>
+</div>
+
+<!-- FLASHCARD -->
+<div class="page" id="page-flashcard">
+  <div class="page-title">Flashcard <span>SRS</span></div>
+  <div class="fc-cat-row" id="fc-cats"></div>
+  <div class="fc-wrap">
+    <div class="fc-prog" id="fc-prog">Kartu 1 dari 10</div>
+    <div class="fc-card" id="fc-card" onclick="flipCard()">
+      <div class="fc-main jp" id="fc-main">会社</div>
+      <div class="fc-rom" id="fc-rom" style="display:none">kaisha</div>
+      <div class="fc-meaning" id="fc-meaning" style="display:none">Perusahaan / kantor</div>
+      <div class="fc-example jp" id="fc-example" style="display:none"></div>
+      <div class="fc-hint" id="fc-hint">Ketuk untuk lihat arti ↓</div>
+    </div>
+    <div class="fc-btns" id="fc-btns" style="display:none">
+      <button class="fc-btn btn-lupa" onclick="answer(0)">✗ Lupa</button>
+      <button class="fc-btn btn-agak" onclick="answer(1)">~ Agak ingat</button>
+      <button class="fc-btn btn-hafal" onclick="answer(2)">✓ Hafal!</button>
+    </div>
+    <p style="font-size:11px;color:var(--muted);text-align:center;max-width:380px">Sistem SRS otomatis jadwalkan ulang berdasarkan penilaianmu. "Lupa" = muncul besok, "Hafal" = muncul 7 hari lagi.</p>
+  </div>
+</div>
+
+<!-- GRAMMAR -->
+<div class="page" id="page-grammar">
+  <div class="page-title">Grammar <span>N5</span></div>
+  <div id="grammar-list"></div>
+</div>
+
+<!-- QUIZ -->
+<div class="page" id="page-quiz">
+  <div class="page-title">Quiz Harian <span>N5</span></div>
+  <div id="quiz-area"></div>
+</div>
+
+</main>
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════════
+
+const HIRAGANA = [
+  {row:'a', chars:[{jp:'あ',r:'a'},{jp:'い',r:'i'},{jp:'う',r:'u'},{jp:'え',r:'e'},{jp:'お',r:'o'}]},
+  {row:'k', chars:[{jp:'か',r:'ka'},{jp:'き',r:'ki'},{jp:'く',r:'ku'},{jp:'け',r:'ke'},{jp:'こ',r:'ko'}]},
+  {row:'s', chars:[{jp:'さ',r:'sa'},{jp:'し',r:'shi'},{jp:'す',r:'su'},{jp:'せ',r:'se'},{jp:'そ',r:'so'}]},
+  {row:'t', chars:[{jp:'た',r:'ta'},{jp:'ち',r:'chi'},{jp:'つ',r:'tsu'},{jp:'て',r:'te'},{jp:'と',r:'to'}]},
+  {row:'n', chars:[{jp:'な',r:'na'},{jp:'に',r:'ni'},{jp:'ぬ',r:'nu'},{jp:'ね',r:'ne'},{jp:'の',r:'no'}]},
+  {row:'h', chars:[{jp:'は',r:'ha'},{jp:'ひ',r:'hi'},{jp:'ふ',r:'fu'},{jp:'へ',r:'he'},{jp:'ほ',r:'ho'}]},
+  {row:'m', chars:[{jp:'ま',r:'ma'},{jp:'み',r:'mi'},{jp:'む',r:'mu'},{jp:'め',r:'me'},{jp:'も',r:'mo'}]},
+  {row:'y', chars:[{jp:'や',r:'ya'},{jp:'',r:''},{jp:'ゆ',r:'yu'},{jp:'',r:''},{jp:'よ',r:'yo'}]},
+  {row:'r', chars:[{jp:'ら',r:'ra'},{jp:'り',r:'ri'},{jp:'る',r:'ru'},{jp:'れ',r:'re'},{jp:'ろ',r:'ro'}]},
+  {row:'w', chars:[{jp:'わ',r:'wa'},{jp:'',r:''},{jp:'',r:''},{jp:'',r:''},{jp:'を',r:'wo'}]},
+  {row:'n', chars:[{jp:'ん',r:'n'},{jp:'',r:''},{jp:'',r:''},{jp:'',r:''},{jp:'',r:''}]},
+];
+
+const KATAKANA = [
+  {row:'a', chars:[{jp:'ア',r:'a'},{jp:'イ',r:'i'},{jp:'ウ',r:'u'},{jp:'エ',r:'e'},{jp:'オ',r:'o'}]},
+  {row:'k', chars:[{jp:'カ',r:'ka'},{jp:'キ',r:'ki'},{jp:'ク',r:'ku'},{jp:'ケ',r:'ke'},{jp:'コ',r:'ko'}]},
+  {row:'s', chars:[{jp:'サ',r:'sa'},{jp:'シ',r:'shi'},{jp:'ス',r:'su'},{jp:'セ',r:'se'},{jp:'ソ',r:'so'}]},
+  {row:'t', chars:[{jp:'タ',r:'ta'},{jp:'チ',r:'chi'},{jp:'ツ',r:'tsu'},{jp:'テ',r:'te'},{jp:'ト',r:'to'}]},
+  {row:'n', chars:[{jp:'ナ',r:'na'},{jp:'ニ',r:'ni'},{jp:'ヌ',r:'nu'},{jp:'ネ',r:'ne'},{jp:'ノ',r:'no'}]},
+  {row:'h', chars:[{jp:'ハ',r:'ha'},{jp:'ヒ',r:'hi'},{jp:'フ',r:'fu'},{jp:'ヘ',r:'he'},{jp:'ホ',r:'ho'}]},
+  {row:'m', chars:[{jp:'マ',r:'ma'},{jp:'ミ',r:'mi'},{jp:'ム',r:'mu'},{jp:'メ',r:'me'},{jp:'モ',r:'mo'}]},
+  {row:'y', chars:[{jp:'ヤ',r:'ya'},{jp:'',r:''},{jp:'ユ',r:'yu'},{jp:'',r:''},{jp:'ヨ',r:'yo'}]},
+  {row:'r', chars:[{jp:'ラ',r:'ra'},{jp:'リ',r:'ri'},{jp:'ル',r:'ru'},{jp:'レ',r:'re'},{jp:'ロ',r:'ro'}]},
+  {row:'w', chars:[{jp:'ワ',r:'wa'},{jp:'',r:''},{jp:'',r:''},{jp:'',r:''},{jp:'ヲ',r:'wo'}]},
+  {row:'n', chars:[{jp:'ン',r:'n'},{jp:'',r:''},{jp:'',r:''},{jp:'',r:''},{jp:'',r:''}]},
+];
+
+const VOCAB = {
+  kerja: [
+    {jp:'会社',r:'kaisha',id:'Perusahaan',ex:'会社で働きます。(Saya bekerja di perusahaan.)'},
+    {jp:'仕事',r:'shigoto',id:'Pekerjaan',ex:'仕事は大変です。(Pekerjaan itu berat.)'},
+    {jp:'工場',r:'kōjō',id:'Pabrik',ex:'工場で作ります。(Dibuat di pabrik.)'},
+    {jp:'面接',r:'mensetsu',id:'Wawancara kerja',ex:'面接があります。(Ada wawancara kerja.)'},
+    {jp:'給料',r:'kyūryō',id:'Gaji',ex:'給料をもらいます。(Menerima gaji.)'},
+    {jp:'残業',r:'zangyō',id:'Lembur',ex:'今日は残業です。(Hari ini lembur.)'},
+    {jp:'休み',r:'yasumi',id:'Hari libur / istirahat',ex:'明日は休みです。(Besok libur.)'},
+    {jp:'同僚',r:'dōryō',id:'Rekan kerja',ex:'同僚と話します。(Bicara dengan rekan kerja.)'},
+    {jp:'上司',r:'jōshi',id:'Atasan',ex:'上司に報告します。(Lapor ke atasan.)'},
+    {jp:'部長',r:'buchō',id:'Kepala divisi',ex:'部長は忙しいです。(Kepala divisi sibuk.)'},
+  ],
+  sehari: [
+    {jp:'今日',r:'kyō',id:'Hari ini',ex:'今日は月曜日です。(Hari ini Senin.)'},
+    {jp:'明日',r:'ashita',id:'Besok',ex:'明日も来ます。(Besok datang lagi.)'},
+    {jp:'食べる',r:'taberu',id:'Makan',ex:'ご飯を食べます。(Makan nasi.)'},
+    {jp:'飲む',r:'nomu',id:'Minum',ex:'水を飲みます。(Minum air.)'},
+    {jp:'行く',r:'iku',id:'Pergi',ex:'学校へ行きます。(Pergi ke sekolah.)'},
+    {jp:'来る',r:'kuru',id:'Datang',ex:'友達が来ます。(Teman datang.)'},
+    {jp:'見る',r:'miru',id:'Melihat',ex:'テレビを見ます。(Menonton TV.)'},
+    {jp:'聞く',r:'kiku',id:'Mendengar / bertanya',ex:'音楽を聞きます。(Mendengarkan musik.)'},
+    {jp:'話す',r:'hanasu',id:'Berbicara',ex:'日本語を話します。(Berbicara bahasa Jepang.)'},
+    {jp:'書く',r:'kaku',id:'Menulis',ex:'手紙を書きます。(Menulis surat.)'},
+  ],
+  angka: [
+    {jp:'一',r:'ichi',id:'Satu (1)',ex:'一つあります。(Ada satu.)'},
+    {jp:'二',r:'ni',id:'Dua (2)',ex:'二人います。(Ada dua orang.)'},
+    {jp:'三',r:'san',id:'Tiga (3)',ex:'三時です。(Jam 3.)'},
+    {jp:'四',r:'shi/yon',id:'Empat (4)',ex:'四月です。(Bulan April.)'},
+    {jp:'五',r:'go',id:'Lima (5)',ex:'五分後です。(5 menit lagi.)'},
+    {jp:'十',r:'jū',id:'Sepuluh (10)',ex:'十円です。(10 yen.)'},
+    {jp:'百',r:'hyaku',id:'Seratus (100)',ex:'百円です。(100 yen.)'},
+    {jp:'千',r:'sen',id:'Seribu (1000)',ex:'千円です。(1000 yen.)'},
+    {jp:'万',r:'man',id:'Sepuluh ribu (10.000)',ex:'一万円です。(10.000 yen.)'},
+    {jp:'零',r:'rei/zero',id:'Nol (0)',ex:'零点です。(Nilai nol.)'},
+  ],
+};
+
+const GRAMMAR = [
+  {
+    pattern:'〜は〜です',
+    nama:'Pola identitas / pernyataan dasar',
+    desc:'Digunakan untuk menyatakan sesuatu adalah sesuatu. "wa" adalah penanda topik, "desu" adalah kata kerja sopan.',
+    contoh:[
+      {jp:'私は会社員です。',r:'Watashi wa kaishain desu.',id:'Saya adalah karyawan perusahaan.'},
+      {jp:'これは本です。',r:'Kore wa hon desu.',id:'Ini adalah buku.'},
+    ]
+  },
+  {
+    pattern:'〜を〜ます',
+    nama:'Pola kalimat kerja (bentuk sopan)',
+    desc:'"wo" adalah penanda objek. Kata kerja diubah ke bentuk "-masu" untuk percakapan formal/sopan.',
+    contoh:[
+      {jp:'日本語を勉強します。',r:'Nihongo o benkyō shimasu.',id:'Saya belajar bahasa Jepang.'},
+      {jp:'水を飲みます。',r:'Mizu o nomimasu.',id:'Saya minum air.'},
+    ]
+  },
+  {
+    pattern:'〜たいです',
+    nama:'Ingin melakukan sesuatu',
+    desc:'Menambahkan "-tai desu" di akhir kata kerja (bentuk -i) untuk menyatakan keinginan. Dipakai saat wawancara kerja.',
+    contoh:[
+      {jp:'日本で働きたいです。',r:'Nihon de hatarakitai desu.',id:'Saya ingin bekerja di Jepang.'},
+      {jp:'日本語を話したいです。',r:'Nihongo o hanashitai desu.',id:'Saya ingin berbicara bahasa Jepang.'},
+    ]
+  },
+  {
+    pattern:'〜ています',
+    nama:'Sedang melakukan / kondisi berlanjut',
+    desc:'Menunjukkan aksi yang sedang berlangsung atau kondisi yang masih berlaku. Setara dengan "-ing" dalam bahasa Inggris.',
+    contoh:[
+      {jp:'今、仕事をしています。',r:'Ima, shigoto o shite imasu.',id:'Sekarang sedang bekerja.'},
+      {jp:'日本語を勉強しています。',r:'Nihongo o benkyō shite imasu.',id:'Sedang belajar bahasa Jepang.'},
+    ]
+  },
+  {
+    pattern:'〜ませんか',
+    nama:'Ajakan / tawaran sopan',
+    desc:'Digunakan untuk mengajak seseorang melakukan sesuatu dengan sopan. Sangat berguna di lingkungan kerja Jepang.',
+    contoh:[
+      {jp:'一緒に食べませんか。',r:'Issho ni tabemasen ka.',id:'Maukah makan bersama?'},
+      {jp:'手伝いましょうか。',r:'Tetsudai mashō ka.',id:'Boleh saya bantu?'},
+    ]
+  },
+  {
+    pattern:'〜てください',
+    nama:'Permintaan sopan',
+    desc:'Meminta seseorang melakukan sesuatu dengan sopan. Di pabrik/kantor sering digunakan atasan ke bawahan.',
+    contoh:[
+      {jp:'ここに名前を書いてください。',r:'Koko ni namae o kaite kudasai.',id:'Tolong tulis nama di sini.'},
+      {jp:'ちょっと待ってください。',r:'Chotto matte kudasai.',id:'Tolong tunggu sebentar.'},
+    ]
+  },
+];
+
+const QUIZ_DATA = [
+  {q:'会社 artinya...', jp:'会社', opts:['Pekerjaan','Perusahaan','Pabrik','Gaji'], ans:1},
+  {q:'Bagaimana cara baca 仕事?', jp:'仕事', opts:['kaisha','kyūryō','shigoto','zangyō'], ans:2},
+  {q:'"Saya ingin bekerja di Jepang" dalam bahasa Jepang:', jp:'日本で働き___です', opts:['ます','たい','ません','います'], ans:1},
+  {q:'工場 dibaca...', jp:'工場', opts:['kaisha','kōjō','jōshi','yasumi'], ans:1},
+  {q:'Apa arti 休み?', jp:'休み', opts:['Kerja lembur','Gaji','Hari libur','Wawancara'], ans:2},
+  {q:'Pola 〜てください digunakan untuk...', jp:'〜てください', opts:['Menyatakan identitas','Permintaan sopan','Ingin sesuatu','Bertanya'], ans:1},
+  {q:'面接 artinya...', jp:'面接', opts:['Kepala divisi','Rekan kerja','Wawancara kerja','Atasan'], ans:2},
+  {q:'Bagaimana kata "atasan" dalam bahasa Jepang?', jp:'???', opts:['同僚','部長','上司','給料'], ans:2},
+  {q:'残業 artinya...', jp:'残業', opts:['Istirahat','Lembur','Libur','Sakit'], ans:1},
+  {q:'"Sedang bekerja sekarang" dalam Jepang:', jp:'今、仕事を___', opts:['します','しています','したい','しません'], ans:1},
+];
+
+// ══════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════
+let learnedH = JSON.parse(localStorage.getItem('learnedH') || '[]');
+let learnedK = JSON.parse(localStorage.getItem('learnedK') || '[]');
+let fcCategory = 'kerja';
+let fcCards = [...VOCAB.kerja];
+let fcIndex = 0;
+let fcFlipped = false;
+let quizIndex = 0;
+let quizScore = 0;
+let quizAnswered = false;
+let quizQuestions = [];
+
+// ══════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════
+function nav(pageId, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + pageId).classList.add('active');
+  if (el) el.classList.add('active');
+}
+
+// ══════════════════════════════════════════════
+// KANA GRID
+// ══════════════════════════════════════════════
+function buildKanaGrid(data, containerId, storageKey, learnedArr) {
+  const container = document.getElementById(containerId);
+  let html = '';
+  data.forEach(rowData => {
+    html += `<div class="kana-row-group">`;
+    html += `<div class="kana-row-label">${rowData.row}</div>`;
+    rowData.chars.forEach(c => {
+      if (!c.jp) {
+        html += `<div></div>`;
+      } else {
+        const id = storageKey + '_' + c.jp;
+        const learned = learnedArr.includes(c.jp) ? 'learned' : '';
+        html += `<div class="kana-cell ${learned}" id="${id}" onclick="toggleKana('${c.jp}','${storageKey}',this)">
+          <div class="kana-jp">${c.jp}</div>
+          <div class="kana-rom">${c.r}</div>
+        </div>`;
+      }
+    });
+    html += `</div>`;
+  });
+  container.innerHTML = html;
+}
+
+function toggleKana(char, key, el) {
+  const arr = key === 'H' ? learnedH : learnedK;
+  const idx = arr.indexOf(char);
+  if (idx === -1) { arr.push(char); el.classList.add('learned'); }
+  else { arr.splice(idx,1); el.classList.remove('learned'); }
+  localStorage.setItem('learned'+key, JSON.stringify(arr));
+}
+
+// ══════════════════════════════════════════════
+// FLASHCARD
+// ══════════════════════════════════════════════
+function buildFcCats() {
+  const cats = {kerja:'Kosakata Kerja', sehari:'Sehari-hari', angka:'Angka'};
+  let html = '';
+  for (const k in cats) {
+    html += `<button class="cat-pill ${k===fcCategory?'active':''}" onclick="setFcCat('${k}',this)">${cats[k]}</button>`;
+  }
+  document.getElementById('fc-cats').innerHTML = html;
+}
+
+function setFcCat(cat, el) {
+  fcCategory = cat;
+  fcCards = [...VOCAB[cat]];
+  fcIndex = 0;
+  document.querySelectorAll('.cat-pill').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  loadFc();
+}
+
+function loadFc() {
+  fcFlipped = false;
+  const c = fcCards[fcIndex];
+  document.getElementById('fc-main').textContent = c.jp;
+  document.getElementById('fc-rom').textContent = c.r;
+  document.getElementById('fc-meaning').textContent = c.id;
+  document.getElementById('fc-example').textContent = c.ex || '';
+  document.getElementById('fc-rom').style.display = 'none';
+  document.getElementById('fc-meaning').style.display = 'none';
+  document.getElementById('fc-example').style.display = 'none';
+  document.getElementById('fc-hint').style.display = 'block';
+  document.getElementById('fc-btns').style.display = 'none';
+  document.getElementById('fc-prog').textContent = `Kartu ${fcIndex+1} dari ${fcCards.length} — ${fcCategory === 'kerja' ? 'Kosakata Kerja' : fcCategory === 'sehari' ? 'Sehari-hari' : 'Angka'}`;
+}
+
+function flipCard() {
+  if (fcFlipped) return;
+  fcFlipped = true;
+  document.getElementById('fc-rom').style.display = 'block';
+  document.getElementById('fc-meaning').style.display = 'block';
+  document.getElementById('fc-example').style.display = 'block';
+  document.getElementById('fc-hint').style.display = 'none';
+  document.getElementById('fc-btns').style.display = 'flex';
+}
+
+function answer(score) {
+  fcIndex = (fcIndex + 1) % fcCards.length;
+  loadFc();
+}
+
+// ══════════════════════════════════════════════
+// GRAMMAR
+// ══════════════════════════════════════════════
+function buildGrammar() {
+  let html = '';
+  GRAMMAR.forEach(g => {
+    html += `<div class="grammar-item">
+      <div class="grammar-pattern">${g.pattern}</div>
+      <div class="grammar-label">Nama pola</div>
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:8px">${g.nama}</div>
+      <div class="grammar-label">Penjelasan</div>
+      <div class="grammar-desc">${g.desc}</div>
+      <div class="grammar-label" style="margin-top:10px">Contoh kalimat</div>`;
+    g.contoh.forEach(c => {
+      html += `<div class="grammar-example">
+        <div class="grammar-ex-jp">${c.jp}</div>
+        <div class="grammar-ex-rom">${c.r}</div>
+        <div class="grammar-ex-id">${c.id}</div>
+      </div>`;
+    });
+    html += `</div>`;
+  });
+  document.getElementById('grammar-list').innerHTML = html;
+}
+
+// ══════════════════════════════════════════════
+// QUIZ
+// ══════════════════════════════════════════════
+function startQuiz() {
+  quizQuestions = [...QUIZ_DATA].sort(() => Math.random() - 0.5).slice(0, 10);
+  quizIndex = 0;
+  quizScore = 0;
+  showQuestion();
+}
+
+function showQuestion() {
+  const q = quizQuestions[quizIndex];
+  quizAnswered = false;
+  let optsHtml = q.opts.map((o,i) =>
+    `<button class="quiz-opt" onclick="answerQuiz(${i})">${o}</button>`
+  ).join('');
+  document.getElementById('quiz-area').innerHTML = `
+    <div class="card">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px">Soal ${quizIndex+1} dari ${quizQuestions.length} &nbsp;|&nbsp; Skor: ${quizScore}</div>
+      <div class="quiz-question">${q.q}</div>
+      <div class="quiz-jp jp">${q.jp}</div>
+      <div class="quiz-options">${optsHtml}</div>
+    </div>`;
+}
+
+function answerQuiz(chosen) {
+  if (quizAnswered) return;
+  quizAnswered = true;
+  const q = quizQuestions[quizIndex];
+  const opts = document.querySelectorAll('.quiz-opt');
+  opts[q.ans].classList.add('correct');
+  if (chosen !== q.ans) {
+    opts[chosen].classList.add('wrong');
+  } else {
+    quizScore++;
+  }
+  setTimeout(() => {
+    quizIndex++;
+    if (quizIndex >= quizQuestions.length) showResult();
+    else showQuestion();
+  }, 1000);
+}
+
+function showResult() {
+  const pct = Math.round((quizScore / quizQuestions.length) * 100);
+  const msg = pct >= 80 ? 'Luar biasa! 🎉' : pct >= 60 ? 'Bagus! Terus belajar 💪' : 'Ayo belajar lebih giat 📚';
+  document.getElementById('quiz-area').innerHTML = `
+    <div class="card quiz-result">
+      <div class="quiz-score">${quizScore}/${quizQuestions.length}</div>
+      <div class="quiz-meta">${pct}% benar — ${msg}</div>
+      <br>
+      <div style="font-size:13px;color:var(--muted)">XP didapat: +${quizScore * 10} XP</div>
+      <button class="btn-primary" onclick="startQuiz()">Ulangi Quiz</button>
+    </div>`;
+}
+
+// ══════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════
+buildKanaGrid(HIRAGANA, 'hiragana-grid', 'H', learnedH);
+buildKanaGrid(KATAKANA, 'katakana-grid', 'K', learnedK);
+buildFcCats();
+loadFc();
+buildGrammar();
+startQuiz();
+</script>
+</body>
+</html>
