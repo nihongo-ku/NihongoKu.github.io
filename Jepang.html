@@ -1248,10 +1248,20 @@ function flashSave() {
   setTimeout(() => el.classList.remove('show'), 2000);
 }
 
-// ← INI YANG HILANG, WAJIB ADA
+let appInitialized = false; // ← tambah flag ini
+
 sb.auth.onAuthStateChange(async (event, session) => {
-  if (session?.user) await initApp(session.user);
-  else showScreen('auth');
+  console.log('Auth event:', event, 'Session:', session?.user?.email);
+  
+  if (session?.user) {
+    // Cegah initApp dipanggil berkali-kali
+    if (appInitialized && event === 'TOKEN_REFRESHED') return;
+    appInitialized = true;
+    await initApp(session.user);
+  } else {
+    appInitialized = false;
+    showScreen('auth');
+  }
 });
 </script>
 </body>
