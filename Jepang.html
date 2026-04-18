@@ -834,10 +834,10 @@ function showScreen(s) {
 async function loadProgress() {
   const uid = currentUser.id;
   try {
-    const { data, error } = await sb.from('user_progress')
-      .select('*').eq('user_id', uid).single();
+    const { data } = await sb.from('user_progress')
+      .select('*').eq('user_id', uid).maybeSingle(); // ← pakai maybeSingle, bukan single
     
-    if (data && !error) {
+    if (data) {
       learnedH = data.learned_hiragana || [];
       learnedK = data.learned_katakana || [];
       learnedD = data.learned_dakuon || [];
@@ -848,40 +848,56 @@ async function loadProgress() {
         quizDone: data.quiz_done || 0
       };
     } else {
-      // Data belum ada, insert default
       userProgress = { xp: 0, streak: 0, quizDone: 0 };
-      await sb.from('user_progress').insert({
+      // Pakai upsert bukan insert → aman meski dipanggil 2x bersamaan
+      await sb.from('user_progress').upsert({
         user_id: uid,
         learned_hiragana: [], learned_katakana: [],
         learned_dakuon: [], learned_vocab: {},
         xp: 0, streak: 0, quiz_done: 0,
         last_login: new Date().toISOString()
-      });
+      }, { onConflict: 'user_id' });
     }
   } catch(err) {
-    // Gagal load progress → pakai default, jangan crash
     console.warn('loadProgress gagal, pakai default:', err);
     userProgress = { xp: 0, streak: 0, quizDone: 0 };
   }
 }
-async function saveProgress() {
-  if(!currentUser) return;
-  await sb.from('user_progress').upsert({
-    user_id:currentUser.id,
-    learned_hiragana:learnedH,
-    learned_katakana:learnedK,
-    learned_dakuon:learnedD,
-    learned_vocab:learnedVocab,
-    xp:userProgress.xp||0,
-    streak:userProgress.streak||0,
-    quiz_done:userProgress.quizDone||0,
-    last_login:new Date().toISOString(),
-  },{onConflict:'user_id'});
-  flashSave();
-}
-function scheduleSave(){clearTimeout(saveTimer);saveTimer=setTimeout(saveProgress,1500);}
-function flashSave(){const el=document.getElementById('save-indicator');el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2000);}
 
+async function initApp(user) {
+  currentUser = user;
+  showScreen('loading');
+  try {
+    await loadProgress();
+    updateSidebarUser();
+    buildKanaGrid(HIRAGANA, 'hiragana-grid', 'H', learnedH);
+    buildKanaGrid(KATAKANA, 'katakana-grid', 'K', learnedK);
+    buildDakuon();
+    fcCards = [...VOCAB[fcCategory]];
+    buildFcCats(); loadFc();
+    buildGrammar();
+    startQuiz();
+    buildKamusCats(); renderKanji();
+    showScreen('app'); // ← ini yang paling penting, harus selalu terpanggil
+  } catch(err) {
+    console.error('initApp error:', err);
+    // Meski error, tetap tampilkan app dengan data kosong
+    learnedH = []; learnedK = []; learnedD = []; learnedVocab = {};
+    userProgress = { xp: 0, streak: 0, quizDone: 0 };
+    try {
+      updateSidebarUser();
+      buildKanaGrid(HIRAGANA, 'hiragana-grid', 'H', learnedH);
+      buildKanaGrid(KATAKANA, 'katakana-grid', 'K', learnedK);
+      buildDakuon();
+      fcCards = [...VOCAB[fcCategory]];
+      buildFcCats(); loadFc();
+      buildGrammar();
+      startQuiz();
+      buildKamusCats(); renderKanji();
+    } catch(e) { console.error(e); }
+    showScreen('app'); // ← tetap tampil meski ada error
+  }
+}
 // ════════════════════════════════════════
 // UI UPDATE
 // ════════════════════════════════════════
