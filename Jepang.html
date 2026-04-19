@@ -1171,13 +1171,33 @@ async function initApp(user) {
 // ══════════════════════════════════════════════════
 // AUTH STATE LISTENER — WAJIB DI PALING BAWAH
 // ══════════════════════════════════════════════════
+let appInitialized = false;
+
+async function checkAndInit() {
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session?.user) {
+      appInitialized = true;
+      await initApp(session.user);
+    } else {
+      showScreen('auth');
+    }
+  } catch (err) {
+    console.error('checkAndInit error:', err);
+    showScreen('auth');
+  }
+}
+
+// Jalankan langsung saat halaman load — fix blank saat refresh
+checkAndInit();
+
+// Listener untuk handle login/logout real-time
 sb.auth.onAuthStateChange(async (event, session) => {
   console.log('Auth event:', event, 'User:', session?.user?.email);
-  if (session?.user) {
-    if (appInitialized && event === 'TOKEN_REFRESHED') return;
+  if (event === 'SIGNED_IN' && !appInitialized) {
     appInitialized = true;
     await initApp(session.user);
-  } else {
+  } else if (event === 'SIGNED_OUT') {
     appInitialized = false;
     showScreen('auth');
   }
