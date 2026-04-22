@@ -6,7 +6,6 @@
 <title>Nihongo Belajar! | JLPT N5</title>
 <link rel="icon" href="nihongo-favicon.ico" type="image/x-icon">
 
-<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
@@ -25,372 +24,16 @@ const db = firebase.firestore();
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Nunito:wght@400;600;700&display=swap');
-:root{
-  --bg:#0f1117;--bg2:#1a1d27;--bg3:#222638;--card:#1e2235;
-  --border:#2e3350;--text:#e8eaf0;--muted:#7b82a0;
-  --accent:#6c8fff;--accent2:#a78bfa;
-  --green:#4ade80;--red:#f87171;--yellow:#fbbf24;--teal:#2dd4bf;--pink:#f472b6;
-}
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
-.jp{font-family:'Noto Sans JP',sans-serif}
-
-/* AUTH */
-#auth-screen{display:none;align-items:center;justify-content:center;min-height:100vh;padding:20px}
-.auth-box{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:40px 36px;width:100%;max-width:400px}
-.auth-logo{font-size:48px;font-family:'Noto Sans JP',sans-serif;color:var(--accent);text-align:center;margin-bottom:6px}
-.auth-subtitle{text-align:center;color:var(--muted);font-size:13px;margin-bottom:28px}
-.auth-tabs{display:flex;border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:24px}
-.auth-tab{flex:1;padding:10px;text-align:center;font-size:13px;font-weight:700;cursor:pointer;color:var(--muted);background:transparent;border:none;font-family:'Nunito',sans-serif;transition:all .15s}
-.auth-tab.active{background:var(--accent);color:#fff}
-.auth-form{display:flex;flex-direction:column;gap:14px}
-.auth-label{font-size:12px;color:var(--muted);margin-bottom:4px;font-weight:700;letter-spacing:.04em}
-.auth-input{width:100%;padding:12px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Nunito',sans-serif;font-size:14px;outline:none;transition:border-color .15s}
-.auth-input:focus{border-color:var(--accent)}
-.auth-input::placeholder{color:var(--muted)}
-.auth-btn{padding:13px;background:var(--accent);border:none;border-radius:10px;color:#fff;font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .15s;margin-top:4px}
-.auth-btn:hover{background:#8faaff}
-.auth-btn:disabled{opacity:.5;cursor:not-allowed}
-.auth-error{background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.3);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--red);display:none}
-.auth-success{background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.25);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--green);display:none}
-.auth-divider{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12px}
-.auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:var(--border)}
-.btn-google{padding:12px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:8px}
-.btn-google:hover{border-color:var(--accent);background:rgba(108,143,255,.08)}
-
-/* LOADING */
-#loading-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;flex-direction:column;gap:16px}
-.spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-
-/* APP LAYOUT */
-#app-screen{display:none}
-.shell{display:flex;min-height:100vh}
-.sidebar{width:220px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:20px 0;position:sticky;top:0;height:100vh;overflow-y:auto}
-.main{flex:1;overflow-y:auto}
-.logo{padding:0 20px 16px;border-bottom:1px solid var(--border)}
-.logo-jp{font-size:26px;font-weight:700;color:var(--accent);font-family:'Noto Sans JP',sans-serif}
-.logo-en{font-size:10px;color:var(--muted);margin-top:2px;letter-spacing:.06em}
-.nav-section{margin:14px 0 4px;padding:0 20px;font-size:10px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
-.nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;cursor:pointer;font-size:13px;font-weight:600;color:var(--muted);border-left:3px solid transparent;transition:all .15s}
-.nav-item:hover{color:var(--text);background:rgba(255,255,255,.04)}
-.nav-item.active{color:var(--accent);border-left-color:var(--accent);background:rgba(108,143,255,.08)}
-.nav-icon{font-size:15px;width:20px;text-align:center}
-.user-block{margin-top:auto;padding:14px 20px;border-top:1px solid var(--border)}
-.user-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
-.user-avatar{width:34px;height:34px;border-radius:50%;background:rgba(108,143,255,.2);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--accent);flex-shrink:0}
-.user-name{font-size:12px;font-weight:700}
-.user-email{font-size:10px;color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px}
-.xp-top{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:5px}
-.xp-bar{height:5px;background:var(--bg3);border-radius:3px;overflow:hidden}
-.xp-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:3px;transition:width .5s}
-.streak-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(251,191,36,.12);color:var(--yellow);font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;margin-top:8px}
-.logout-btn{width:100%;padding:8px;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;margin-top:8px}
-.logout-btn:hover{border-color:var(--red);color:var(--red)}
-
-/* PAGES */
-.page{display:none;padding:24px;max-width:960px}
-.page.active{display:block}
-.page-title{font-size:22px;font-weight:700;margin-bottom:6px}
-.page-title span{color:var(--accent)}
-.page-sub{font-size:13px;color:var(--muted);margin-bottom:20px}
-
-/* CARDS */
-.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 20px}
-.card+.card{margin-top:14px}
-.card-label{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin-bottom:12px}
-
-/* DASHBOARD */
-.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px}
-.stat-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px}
-.stat-num{font-size:28px;font-weight:700}
-.stat-lbl{font-size:12px;color:var(--muted);margin-top:2px}
-.mod-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.mod-item{background:var(--bg3);border-radius:10px;padding:12px 14px;cursor:pointer;transition:background .15s;border:1px solid transparent}
-.mod-item:hover{border-color:var(--accent)}
-.mod-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-.mod-name{font-size:13px;font-weight:700}
-.mod-pct{font-size:12px;color:var(--muted)}
-.prog-bar{height:5px;background:var(--bg2);border-radius:3px;overflow:hidden}
-.prog-fill{height:100%;border-radius:3px}
-.today-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:4px}
-.today-card{background:var(--bg3);border-radius:10px;padding:12px;cursor:pointer;border:1px solid var(--border);transition:all .15s}
-.today-card:hover{border-color:var(--accent2);transform:translateY(-2px)}
-.today-tag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;display:inline-block;margin-bottom:6px}
-.tag-new{background:rgba(108,143,255,.18);color:var(--accent)}
-.tag-review{background:rgba(74,222,128,.15);color:var(--green)}
-.tag-quiz{background:rgba(251,191,36,.15);color:var(--yellow)}
-.today-jp{font-size:24px;font-family:'Noto Sans JP',sans-serif;font-weight:700}
-.today-rom{font-size:11px;color:var(--muted)}
-.today-id{font-size:12px;margin-top:3px}
-
-/* KANA GRID */
-.kana-row-group{margin-bottom:8px;display:grid;grid-template-columns:36px repeat(5,1fr);gap:6px;align-items:center}
-.kana-row-label{font-size:10px;color:var(--muted);display:flex;align-items:center;justify-content:center;font-weight:700}
-.kana-cell{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 4px;text-align:center;cursor:pointer;transition:all .15s}
-.kana-cell:hover{border-color:var(--accent);background:rgba(108,143,255,.12)}
-.kana-cell.learned{border-color:var(--green);background:rgba(74,222,128,.08)}
-.kana-jp{font-size:22px;font-family:'Noto Sans JP',sans-serif;font-weight:500}
-.kana-rom{font-size:10px;color:var(--muted);margin-top:2px}
-
-/* FLASHCARD */
-.fc-wrap{display:flex;flex-direction:column;align-items:center;gap:18px;padding:10px 0}
-.fc-cat-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
-.cat-pill{padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s}
-.cat-pill.active{background:var(--accent2);border-color:var(--accent2);color:#fff}
-.fc-prog{font-size:12px;color:var(--muted)}
-.fc-card{width:100%;max-width:440px;background:var(--card);border:1px solid var(--border);border-radius:20px;padding:36px 32px;text-align:center;cursor:pointer;min-height:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;transition:transform .1s}
-.fc-card:active{transform:scale(.98)}
-.fc-kanji{font-size:60px;font-family:'Noto Sans JP',sans-serif;font-weight:700;line-height:1.1}
-.fc-hiragana{font-size:22px;font-family:'Noto Sans JP',sans-serif;color:var(--accent);font-weight:500}
-.fc-katakana{font-size:16px;font-family:'Noto Sans JP',sans-serif;color:var(--teal);font-weight:400}
-.fc-romaji{font-size:15px;color:var(--muted)}
-.fc-meaning{font-size:16px;font-weight:700}
-.fc-example-block{background:var(--bg3);border-radius:10px;padding:12px 16px;width:100%;text-align:left;margin-top:4px}
-.fc-ex-jp{font-family:'Noto Sans JP',sans-serif;font-size:14px}
-.fc-ex-rom{font-size:12px;color:var(--muted);margin-top:2px}
-.fc-ex-id{font-size:12px;color:var(--text);margin-top:2px}
-.fc-hint{font-size:12px;color:var(--muted)}
-.fc-btns{display:flex;gap:12px;width:100%;max-width:440px}
-.fc-btn{flex:1;padding:12px;border-radius:12px;border:none;font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .15s}
-.fc-btn:hover{transform:translateY(-2px)}
-.btn-lupa{background:rgba(248,113,113,.15);color:var(--red);border:1px solid rgba(248,113,113,.3)}
-.btn-agak{background:rgba(251,191,36,.12);color:var(--yellow);border:1px solid rgba(251,191,36,.25)}
-.btn-hafal{background:rgba(74,222,128,.12);color:var(--green);border:1px solid rgba(74,222,128,.25)}
-
-/* QUIZ */
-.quiz-jp-big{font-size:52px;font-family:'Noto Sans JP',sans-serif;font-weight:700;text-align:center;margin:12px 0 4px}
-.quiz-furigana{font-size:16px;font-family:'Noto Sans JP',sans-serif;color:var(--accent);text-align:center;margin-bottom:16px}
-.quiz-options{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
-.quiz-opt{padding:14px 18px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;cursor:pointer;font-size:14px;font-weight:600;transition:all .15s;text-align:left;font-family:'Nunito',sans-serif;color:var(--text)}
-.quiz-opt:hover{border-color:var(--accent)}
-.quiz-opt.correct{border-color:var(--green);background:rgba(74,222,128,.12);color:var(--green)}
-.quiz-opt.wrong{border-color:var(--red);background:rgba(248,113,113,.1);color:var(--red)}
-.quiz-score-big{font-size:52px;font-weight:700;color:var(--accent);text-align:center}
-.quiz-meta{font-size:14px;color:var(--muted);text-align:center;margin-top:6px}
-.btn-primary{padding:12px 28px;background:var(--accent);border:none;border-radius:10px;color:#fff;font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;cursor:pointer;margin-top:16px;transition:all .15s;display:block}
-.btn-primary:hover{background:#8faaff}
-
-/* GRAMMAR */
-.grammar-item{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin-bottom:12px}
-.grammar-pattern{font-size:18px;font-weight:700;color:var(--accent2);font-family:'Noto Sans JP',sans-serif;margin-bottom:4px}
-.grammar-label{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.06em;margin-bottom:4px}
-.grammar-desc{font-size:13px;margin-bottom:10px;line-height:1.7}
-.grammar-example{background:var(--bg3);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:12px 14px;margin-top:8px}
-.grammar-ex-jp{font-family:'Noto Sans JP',sans-serif;font-size:16px;font-weight:500}
-.grammar-ex-kana{font-size:13px;color:var(--accent);font-family:'Noto Sans JP',sans-serif;margin-top:2px}
-.grammar-ex-rom{font-size:12px;color:var(--muted);margin-top:2px}
-.grammar-ex-id{font-size:13px;margin-top:4px}
-
-/* KAMUS KANJI */
-.kanji-search-row{display:flex;gap:10px;margin-bottom:16px}
-.kanji-search{flex:1;padding:11px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Nunito',sans-serif;font-size:14px;outline:none;transition:border-color .15s}
-.kanji-search:focus{border-color:var(--accent)}
-.kanji-filter{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
-.kf-btn{padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all .15s}
-.kf-btn.active{background:var(--accent);border-color:var(--accent);color:#fff}
-.kanji-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
-.kanji-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;gap:14px;align-items:flex-start;cursor:pointer;transition:border-color .15s}
-.kanji-card:hover{border-color:var(--accent2)}
-.kanji-char{font-size:48px;font-family:'Noto Sans JP',sans-serif;font-weight:700;color:var(--accent);line-height:1;min-width:56px;text-align:center}
-.kanji-info{flex:1;min-width:0}
-.kanji-meaning{font-size:14px;font-weight:700;margin-bottom:4px}
-.kanji-readings{font-size:12px;color:var(--muted);font-family:'Noto Sans JP',sans-serif;line-height:1.7}
-.kanji-reading-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-right:4px}
-.kanji-on{color:var(--accent)}
-.kanji-kun{color:var(--teal)}
-.kanji-example-mini{font-size:12px;color:var(--text);margin-top:6px;font-family:'Noto Sans JP',sans-serif;background:var(--bg3);border-radius:6px;padding:6px 10px;line-height:1.6}
-
-/* DAKUON */
-.daku-section{margin-bottom:28px}
-.daku-title{font-size:15px;font-weight:700;color:var(--yellow);margin-bottom:4px}
-.daku-desc{font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6}
-.daku-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px}
-.daku-cell{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 6px;text-align:center;cursor:pointer;transition:all .15s}
-.daku-cell:hover{border-color:var(--yellow);background:rgba(251,191,36,.08)}
-.daku-cell.learned{border-color:var(--green);background:rgba(74,222,128,.08)}
-.daku-main{font-size:26px;font-family:'Noto Sans JP',sans-serif;font-weight:500}
-.daku-sub{font-size:11px;color:var(--muted);margin-top:3px}
-.daku-from{font-size:10px;color:var(--yellow);margin-top:2px}
-
-/* MODAL */
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;align-items:center;justify-content:center;padding:20px}
-.modal-overlay.show{display:flex}
-.modal-box{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:28px;max-width:500px;width:100%;max-height:90vh;overflow-y:auto}
-.modal-kanji{font-size:80px;font-family:'Noto Sans JP',sans-serif;font-weight:700;color:var(--accent);text-align:center;line-height:1}
-.modal-meaning{font-size:20px;font-weight:700;text-align:center;margin:8px 0 16px}
-.modal-row{display:flex;gap:8px;margin-bottom:8px;align-items:flex-start}
-.modal-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;min-width:70px;padding-top:2px}
-.modal-val{font-size:14px;font-family:'Noto Sans JP',sans-serif;line-height:1.7}
-.modal-close{display:block;margin:16px auto 0;padding:10px 28px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--muted);font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s}
-.modal-close:hover{border-color:var(--accent);color:var(--accent)}
-
-/* SAVE INDICATOR */
-.save-indicator{position:fixed;bottom:20px;right:20px;background:var(--card);border:1px solid var(--green);border-radius:10px;padding:8px 14px;font-size:12px;color:var(--green);font-weight:700;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999}
-.save-indicator.show{opacity:1}
-
-/* MOBILE */
-@media(max-width:640px){
-  .sidebar{width:60px}
-  .sidebar .logo-en,.sidebar .nav-item span:last-child,.sidebar .nav-section,
-  .sidebar .xp-top,.sidebar .streak-badge,.sidebar .user-name,.sidebar .user-email,.sidebar .logout-btn{display:none}
-  .logo-jp{font-size:18px}
-  .nav-item{padding:12px;justify-content:center}
-  .nav-icon{width:auto}
-  .stat-grid{grid-template-columns:1fr 1fr}
-  .today-grid{grid-template-columns:1fr 1fr}
-  .quiz-options{grid-template-columns:1fr}
-  .fc-kanji{font-size:48px}
-  .kanji-grid{grid-template-columns:1fr}
-  .user-block{padding:10px}
-  .user-avatar{margin:0 auto}
-  .user-row{justify-content:center}
-}
-
-/* Old body::before removed — bg-canvas handles all backgrounds */
 
 /* ══════════════════════════════════════════
-   PAGE TRANSITION
+   CSS VARIABLES — DARK & LIGHT
 ══════════════════════════════════════════ */
-.page.active{animation:pageIn .35s cubic-bezier(.22,1,.36,1) both}
-@keyframes pageIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-
-/* General hover lifts */
-.card:hover,.stat-box:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(108,143,255,0.08);transition:transform .2s ease,box-shadow .2s ease}
-.stat-box{transition:transform .2s ease,box-shadow .2s ease}
-.today-card{transition:all .2s cubic-bezier(.22,1,.36,1)}
-.kanji-card{transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease}
-.kanji-card:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(167,139,250,0.12)}
-.mod-item{transition:all .2s ease}
-.mod-item:hover{transform:translateY(-1px)}
-
-/* Button presses */
-.auth-btn:active,.btn-primary:active{transform:scale(.97)}
-.fc-btn:active{transform:scale(.95) translateY(2px) !important}
-.quiz-opt{transition:all .15s cubic-bezier(.22,1,.36,1)}
-.quiz-opt:active{transform:scale(.98)}
-
-/* Kana cell bounce */
-.kana-cell{transition:all .18s cubic-bezier(.34,1.56,.64,1)}
-.kana-cell:hover{transform:scale(1.08)}
-.kana-cell:active{transform:scale(.94)}
-.daku-cell{transition:all .18s cubic-bezier(.34,1.56,.64,1)}
-.daku-cell:hover{transform:scale(1.06)}
-.daku-cell:active{transform:scale(.95)}
-
-/* Auth entrance */
-.auth-box{animation:authUp .5s cubic-bezier(.22,1,.36,1) both}
-@keyframes authUp{from{opacity:0;transform:translateY(28px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
-
-/* Loading fade out */
-#loading-screen.fade-out{animation:fadeOut .4s ease forwards}
-@keyframes fadeOut{to{opacity:0;pointer-events:none;display:none}}
-
-/* ══════════════════════════════════════════
-   FLASHCARD 3D FLIP
-══════════════════════════════════════════ */
-.fc-card-wrapper{perspective:1000px;width:100%;max-width:440px}
-.fc-card{
-  width:100%;transform-style:preserve-3d;
-  transition:transform .55s cubic-bezier(.22,1,.36,1),box-shadow .3s ease,border-color .3s ease;
-  position:relative;cursor:pointer;min-height:240px;
-  background:var(--card);border:1px solid var(--border);border-radius:20px;
-  padding:36px 32px;text-align:center;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px}
-.fc-card:hover{box-shadow:0 20px 60px rgba(108,143,255,0.18);border-color:rgba(108,143,255,0.45)}
-.fc-card.flipped{transform:rotateY(180deg)}
-.fc-card-front,.fc-card-back{
-  backface-visibility:hidden;-webkit-backface-visibility:hidden;
-  position:absolute;inset:0;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  padding:36px 32px;gap:10px;border-radius:20px}
-.fc-card-back{transform:rotateY(180deg);background:var(--card)}
-
-/* Card next/prev slide */
-@keyframes slideOut{to{opacity:0;transform:translateX(-70px) scale(.9)}}
-@keyframes slideIn {from{opacity:0;transform:translateX(70px) scale(.9)}to{opacity:1;transform:translateX(0) scale(1)}}
-.fc-card.slide-out{animation:slideOut .22s ease forwards}
-.fc-card.slide-in {animation:slideIn .32s cubic-bezier(.22,1,.36,1) forwards}
-
-/* XP pop */
-@keyframes xpPop{0%{transform:scale(1)}40%{transform:scale(1.5);color:var(--yellow)}100%{transform:scale(1)}}
-.xp-burst{animation:xpPop .5s ease}
-
-/* Quiz feedback */
-@keyframes shakeIt{0%,100%{transform:translateX(0)}20%{transform:translateX(-9px)}40%{transform:translateX(9px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
-@keyframes popIt  {0%{transform:scale(1)}40%{transform:scale(1.07)}100%{transform:scale(1)}}
-.shake-wrong{animation:shakeIt .4s ease}
-.pop-correct{animation:popIt .3s ease}
-
-/* Kana learned burst */
-@keyframes learnBurst{0%{transform:scale(1)}40%{transform:scale(1.28);box-shadow:0 0 0 8px rgba(74,222,128,.25)}100%{transform:scale(1);box-shadow:none}}
-.learned-pop{animation:learnBurst .4s cubic-bezier(.34,1.56,.64,1)}
-
-/* Streak pulse */
-@keyframes streakPulse{0%,100%{box-shadow:0 0 0 0 rgba(251,191,36,.5)}50%{box-shadow:0 0 0 8px rgba(251,191,36,0)}}
-.streak-badge{animation:streakPulse 2.5s ease infinite}
-
-/* ══════════════════════════════════════════
-   LEADERBOARD STYLES
-══════════════════════════════════════════ */
-.lb-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
-.lb-title-wrap{display:flex;align-items:center;gap:10px}
-.lb-refresh{padding:6px 16px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;color:var(--muted);font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s}
-.lb-refresh:hover{border-color:var(--accent);color:var(--accent);transform:rotate(15deg) scale(1.05)}
-.lb-list{display:flex;flex-direction:column;gap:10px}
-.lb-item{
-  display:flex;align-items:center;gap:14px;
-  background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:13px 16px;
-  transition:all .2s ease;
-  animation:lbIn .4s cubic-bezier(.22,1,.36,1) both}
-.lb-item:nth-child(1){animation-delay:.05s}
-.lb-item:nth-child(2){animation-delay:.1s}
-.lb-item:nth-child(3){animation-delay:.15s}
-.lb-item:nth-child(n+4){animation-delay:.2s}
-@keyframes lbIn{from{opacity:0;transform:translateX(-24px)}to{opacity:1;transform:translateX(0)}}
-.lb-item:hover{border-color:var(--accent);transform:translateX(6px);box-shadow:0 4px 20px rgba(108,143,255,0.1)}
-.lb-item.me{border-color:var(--accent2);background:rgba(167,139,250,0.08);box-shadow:0 0 0 1px rgba(167,139,250,0.2)}
-.lb-rank{font-size:20px;font-weight:800;min-width:36px;text-align:center}
-.lb-rank.gold  {color:#fbbf24;text-shadow:0 0 12px rgba(251,191,36,.6)}
-.lb-rank.silver{color:#94a3b8;text-shadow:0 0 8px rgba(148,163,184,.4)}
-.lb-rank.bronze{color:#cd7c47;text-shadow:0 0 8px rgba(205,124,71,.4)}
-.lb-rank.other {color:var(--muted);font-size:15px}
-.lb-avatar{width:40px;height:40px;border-radius:50%;background:rgba(108,143,255,.2);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:var(--accent);flex-shrink:0;border:2px solid transparent;transition:border-color .2s}
-.lb-item.me .lb-avatar{border-color:var(--accent2)}
-.lb-info{flex:1;min-width:0}
-.lb-name{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.lb-sub {font-size:11px;color:var(--muted);margin-top:2px}
-.lb-xp  {font-size:15px;font-weight:800;color:var(--accent);white-space:nowrap}
-.lb-crown{font-size:16px}
-.lb-empty{text-align:center;padding:40px;color:var(--muted);font-size:14px}
-.lb-loading{text-align:center;padding:30px;color:var(--muted);font-size:13px;animation:pulse 1.5s ease infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
-
-/* ══════════════════════════════════════════
-   DARK / LIGHT MODE VARIABLES
-══════════════════════════════════════════ */
-
-/* Smooth color transitions for theme switch */
-body, .sidebar, .card, .stat-box, .modal-box, .auth-box,
-.nav-item, .kana-cell, .daku-cell, .kanji-card, .grammar-item,
-.fc-card, .fc-card-front, .fc-card-back, .quiz-opt, .lb-item,
-.auth-input, .kanji-search, input, .mod-item, .today-card,
-.user-block, .logo, .main {
-  transition: background-color 1.8s ease, border-color 1.6s ease, color 1.4s ease, box-shadow 1.6s ease !important;
-}
-/* Fast transitions for interactive elements */
-button, .kana-cell:hover, .nav-item:hover, .fc-btn, .quiz-opt:hover {
-  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.15s ease !important;
-}
-
-/* DARK MODE (default) */
 html[data-theme="dark"] {
   --bg:#0a0d1a;--bg2:#111428;--bg3:#1a1e35;--card:#141829;
   --border:#252d50;--text:#e8eaf0;--muted:#6b73a0;
   --accent:#6c8fff;--accent2:#a78bfa;
   --green:#4ade80;--red:#f87171;--yellow:#fbbf24;--teal:#2dd4bf;--pink:#f472b6;
 }
-/* LIGHT MODE */
 html[data-theme="light"] {
   --bg:#dde8f8;--bg2:#ccdaf5;--bg3:#b8ccee;--card:#eef4ff;
   --border:#a0b8e0;--text:#0f1d3a;--muted:#4a5c88;
@@ -398,105 +41,127 @@ html[data-theme="light"] {
   --green:#16a34a;--red:#dc2626;--yellow:#b45309;--teal:#0d9488;--pink:#be185d;
 }
 
-/* THEME TOGGLE BUTTON */
-.theme-toggle {
-  position: fixed;
-  top: 16px;
-  right: 16px;
-  z-index: 9997;
-  width: 54px;
-  height: 30px;
-  border-radius: 15px;
-  border: none;
-  cursor: pointer;
-  padding: 3px;
-  display: flex;
-  align-items: center;
-  transition: background 1s ease, box-shadow 1s ease !important;
-  box-shadow: 0 2px 16px rgba(0,0,0,0.3);
-}
-html[data-theme="dark"] .theme-toggle  { background: linear-gradient(135deg,#1e2d5c,#2e3a6c); }
-html[data-theme="light"] .theme-toggle { background: linear-gradient(135deg,#60a5fa,#93c5fd); }
-.theme-toggle-thumb {
-  width: 24px; height: 24px;
-  border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 14px;
-  transition: transform 0.7s cubic-bezier(0.34,1.56,0.64,1), background 1s ease !important;
-}
-html[data-theme="dark"]  .theme-toggle-thumb { transform: translateX(0);    background: #0f1840; }
-html[data-theme="light"] .theme-toggle-thumb { transform: translateX(24px); background: #fef3c7; }
+/* ══════════════════════════════════════════
+   RESET & BOX MODEL
+══════════════════════════════════════════ */
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 /* ══════════════════════════════════════════
-   ANIMATED GRADIENT BG CANVAS — BOTH MODES
-   FIX: Use separate divs for rotating blobs,
-   NOT ::before/::after which get clipped.
-   Each blob is oversized and centered so
-   rotation never shows a hard edge.
+   THEME TRANSITION — DEFINITIVE FIX
+   
+   Strategy: "freeze → swap → unfreeze"
+   
+   JS adds class .no-transition to <html>
+   which kills ALL colour transitions instantly.
+   Theme attribute switches while screen is
+   fully hidden behind the overlay.
+   Then .no-transition is removed so future
+   hover/interactive transitions work normally.
+   
+   Overlay is pure opacity fade — no colour
+   dependency on old or new theme.
+   Background is a mid-grey that works as a
+   neutral bridge between dark and light.
+══════════════════════════════════════════ */
+
+/* When .no-transition is active, kill ALL transitions on everything */
+html.no-transition *,
+html.no-transition *::before,
+html.no-transition *::after {
+  transition: none !important;
+  animation-duration: 0.001s !important;
+}
+
+/* Normal interactive transitions (active when no-transition is NOT set) */
+.kana-cell        { transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.18s cubic-bezier(0.34,1.56,0.64,1); }
+.daku-cell        { transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.18s cubic-bezier(0.34,1.56,0.64,1); }
+.nav-item         { transition: background-color 0.15s ease, color 0.15s ease; }
+.kanji-card       { transition: border-color 0.15s ease, transform 0.18s ease, box-shadow 0.18s ease; }
+.mod-item         { transition: border-color 0.15s ease, transform 0.15s ease; }
+.today-card       { transition: border-color 0.15s ease, transform 0.18s cubic-bezier(0.22,1,.36,1); }
+.stat-box         { transition: transform 0.18s ease, box-shadow 0.18s ease; }
+button            { transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.1s ease; }
+.xp-fill          { transition: width 0.5s ease; }
+.fc-card          { transition: transform 0.55s cubic-bezier(0.22,1,0.36,1), box-shadow 0.3s ease, border-color 0.3s ease; }
+
+/* ── THEME OVERLAY ──
+   Pure opacity fade. Colour is a neutral mid-tone
+   set by JS — does not depend on old or new theme.  */
+#theme-wipe {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  pointer-events: none;
+  opacity: 0;
+  background: #6a7a99; /* neutral mid-grey — works as bridge for both directions */
+  transition: opacity 0.38s ease;
+}
+#theme-wipe.visible {
+  opacity: 1;
+}
+
+body { font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+.jp { font-family: 'Noto Sans JP', sans-serif; }
+
+/* ══════════════════════════════════════════
+   BACKGROUND CANVAS + ANIMATED BLOBS
 ══════════════════════════════════════════ */
 .bg-canvas {
-  position: fixed; inset: 0; z-index: -2; pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
   overflow: hidden;
-  transition: background 2s ease;
 }
-/* Solid base colour per theme */
 html[data-theme="dark"]  .bg-canvas { background: #08091a; }
-html[data-theme="light"] .bg-canvas { background: linear-gradient(180deg,#87c0f5 0%,#b5d9fa 45%,#d6ecff 100%); }
+html[data-theme="light"] .bg-canvas { background: linear-gradient(180deg, #87c0f5 0%, #b5d9fa 45%, #d6ecff 100%); }
 
-/* Shared rotating blob style */
 .bg-blob {
   position: absolute;
   border-radius: 50%;
   filter: blur(80px);
-  /* Make each blob larger than viewport so rotation edge never shows */
-  width: 200vmax; height: 200vmax;
-  top: 50%; left: 50%;
+  width: 200vmax;
+  height: 200vmax;
+  top: 50%;
+  left: 50%;
   transform: translate(-50%, -50%);
   pointer-events: none;
+  transition: opacity 0.65s ease;
 }
 
-/* ── DARK blobs ── */
+/* Dark blobs */
 .bg-blob-d1 {
-  background: radial-gradient(ellipse 30% 25% at 30% 35%,
-    rgba(40,70,200,0.55) 0%, transparent 60%);
+  background: radial-gradient(ellipse 30% 25% at 30% 35%, rgba(40,70,200,0.55) 0%, transparent 60%);
   animation: blobSpin 22s linear infinite;
 }
 .bg-blob-d2 {
-  background: radial-gradient(ellipse 28% 30% at 70% 65%,
-    rgba(100,30,180,0.50) 0%, transparent 60%);
+  background: radial-gradient(ellipse 28% 30% at 70% 65%, rgba(100,30,180,0.50) 0%, transparent 60%);
   animation: blobSpin 30s linear infinite reverse;
 }
 .bg-blob-d3 {
-  background: radial-gradient(ellipse 22% 22% at 55% 25%,
-    rgba(20,50,160,0.35) 0%, transparent 55%);
+  background: radial-gradient(ellipse 22% 22% at 55% 25%, rgba(20,50,160,0.35) 0%, transparent 55%);
   animation: blobSpin 40s linear infinite;
 }
 html[data-theme="light"] .bg-blob-d1,
 html[data-theme="light"] .bg-blob-d2,
 html[data-theme="light"] .bg-blob-d3 { opacity: 0; }
 
-/* ── LIGHT blobs ── */
+/* Light blobs */
 .bg-blob-l1 {
-  background: radial-gradient(ellipse 28% 24% at 72% 18%,
-    rgba(255,225,80,0.45) 0%, transparent 60%);
+  background: radial-gradient(ellipse 28% 24% at 72% 18%, rgba(255,225,80,0.45) 0%, transparent 60%);
   animation: blobSpin 28s linear infinite;
 }
 .bg-blob-l2 {
-  background: radial-gradient(ellipse 30% 26% at 20% 40%,
-    rgba(130,195,255,0.35) 0%, transparent 60%);
+  background: radial-gradient(ellipse 30% 26% at 20% 40%, rgba(130,195,255,0.35) 0%, transparent 60%);
   animation: blobSpin 36s linear infinite reverse;
 }
 .bg-blob-l3 {
-  background: radial-gradient(ellipse 24% 30% at 60% 80%,
-    rgba(180,225,255,0.30) 0%, transparent 55%);
+  background: radial-gradient(ellipse 24% 30% at 60% 80%, rgba(180,225,255,0.30) 0%, transparent 55%);
   animation: blobSpin 44s linear infinite;
 }
 html[data-theme="dark"] .bg-blob-l1,
 html[data-theme="dark"] .bg-blob-l2,
 html[data-theme="dark"] .bg-blob-l3 { opacity: 0; }
-
-/* All blobs transition opacity when theme switches */
-.bg-blob { transition: opacity 2s ease; }
 
 @keyframes blobSpin {
   from { transform: translate(-50%, -50%) rotate(0deg); }
@@ -504,40 +169,53 @@ html[data-theme="dark"] .bg-blob-l3 { opacity: 0; }
 }
 
 /* ══════════════════════════════════════════
-   STARS — DARK MODE
+   STARS — dark mode
 ══════════════════════════════════════════ */
-.stars-layer { position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden; }
-html[data-theme="light"] .stars-layer { opacity:0; pointer-events:none; transition: opacity 2s ease !important; }
-html[data-theme="dark"]  .stars-layer { opacity:1; transition: opacity 2s ease !important; }
+.stars-layer {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+  transition: opacity 0.65s ease;
+}
+html[data-theme="light"] .stars-layer { opacity: 0; }
+html[data-theme="dark"]  .stars-layer { opacity: 1; }
 .star {
-  position:absolute; border-radius:50%; background:#fff;
+  position: absolute;
+  border-radius: 50%;
+  background: #fff;
   animation: twinkle linear infinite;
 }
 @keyframes twinkle {
-  0%,100% { opacity:0.15; transform:scale(1); }
-  50%      { opacity:1;    transform:scale(1.4); }
+  0%,100% { opacity: 0.15; transform: scale(1); }
+  50%      { opacity: 1;    transform: scale(1.4); }
 }
 
 /* ══════════════════════════════════════════
-   SUN — LIGHT MODE (realistic)
+   SUN — light mode (realistic)
 ══════════════════════════════════════════ */
 .sun-wrap {
   position: fixed;
-  top: -40px; right: -40px;
-  width: 320px; height: 320px;
-  z-index: -1; pointer-events: none;
-  transition: opacity 2s ease !important;
+  top: -40px;
+  right: -40px;
+  width: 320px;
+  height: 320px;
+  z-index: -1;
+  pointer-events: none;
+  transition: opacity 0.65s ease;
 }
-html[data-theme="dark"]  .sun-wrap { opacity:0; transition: opacity 2s ease; }
-html[data-theme="light"] .sun-wrap { opacity:1; transition: opacity 2s ease; }
-/* Sun core glow */
+html[data-theme="dark"]  .sun-wrap { opacity: 0; }
+html[data-theme="light"] .sun-wrap { opacity: 1; }
+
 .sun-core {
   position: absolute;
-  width: 80px; height: 80px;
-  top: 40px; right: 40px;
+  width: 80px;
+  height: 80px;
+  top: 40px;
+  right: 40px;
   border-radius: 50%;
-  background: radial-gradient(circle at 40% 40%,
-    #fff8e0 0%, #ffe97a 25%, #ffcc00 55%, #ff9900 80%, rgba(255,140,0,0) 100%);
+  background: radial-gradient(circle at 40% 40%, #fff8e0 0%, #ffe97a 25%, #ffcc00 55%, #ff9900 80%, rgba(255,140,0,0) 100%);
   box-shadow:
     0 0 30px 10px rgba(255,220,50,0.8),
     0 0 80px 30px rgba(255,180,0,0.5),
@@ -546,88 +224,97 @@ html[data-theme="light"] .sun-wrap { opacity:1; transition: opacity 2s ease; }
   animation: sunBreath 6s ease-in-out infinite;
 }
 @keyframes sunBreath {
-  0%,100% { transform:scale(1);   box-shadow:0 0 30px 10px rgba(255,220,50,.8),0 0 80px 30px rgba(255,180,0,.5),0 0 160px 60px rgba(255,140,0,.25); }
-  50%     { transform:scale(1.05);box-shadow:0 0 40px 15px rgba(255,230,60,.9),0 0 100px 40px rgba(255,190,0,.6),0 0 200px 80px rgba(255,150,0,.3); }
+  0%,100% { transform: scale(1);    box-shadow: 0 0 30px 10px rgba(255,220,50,.8),0 0 80px 30px rgba(255,180,0,.5),0 0 160px 60px rgba(255,140,0,.25); }
+  50%     { transform: scale(1.05); box-shadow: 0 0 40px 15px rgba(255,230,60,.9),0 0 100px 40px rgba(255,190,0,.6),0 0 200px 80px rgba(255,150,0,.3); }
 }
-/* Sun rays — outer rotating */
 .sun-rays-outer {
   position: absolute;
   inset: 0;
   border-radius: 50%;
   animation: sunRayOuter 18s linear infinite;
-  transform-origin: center;
 }
 .sun-rays-outer::before {
-  content:''; position:absolute; inset:0; border-radius:50%;
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
   background: conic-gradient(
-    rgba(255,220,60,0.20) 0deg,   rgba(255,220,60,0) 8deg,
-    rgba(255,200,40,0.18) 15deg,  rgba(255,200,40,0) 24deg,
-    rgba(255,220,60,0.22) 30deg,  rgba(255,220,60,0) 40deg,
-    rgba(255,190,30,0.16) 48deg,  rgba(255,190,30,0) 56deg,
-    rgba(255,220,60,0.20) 62deg,  rgba(255,220,60,0) 72deg,
-    rgba(255,200,40,0.18) 80deg,  rgba(255,200,40,0) 90deg,
-    rgba(255,220,60,0.22) 96deg,  rgba(255,220,60,0) 108deg,
-    rgba(255,190,30,0.16) 116deg, rgba(255,190,30,0) 126deg,
-    rgba(255,220,60,0.20) 132deg, rgba(255,220,60,0) 142deg,
-    rgba(255,200,40,0.18) 150deg, rgba(255,200,40,0) 160deg,
-    rgba(255,220,60,0.22) 165deg, rgba(255,220,60,0) 175deg,
-    rgba(255,190,30,0.16) 182deg, rgba(255,190,30,0) 192deg,
-    rgba(255,220,60,0.20) 198deg, rgba(255,220,60,0) 208deg,
-    rgba(255,200,40,0.18) 216deg, rgba(255,200,40,0) 226deg,
-    rgba(255,220,60,0.22) 231deg, rgba(255,220,60,0) 241deg,
-    rgba(255,190,30,0.16) 248deg, rgba(255,190,30,0) 258deg,
-    rgba(255,220,60,0.20) 264deg, rgba(255,220,60,0) 274deg,
-    rgba(255,200,40,0.18) 282deg, rgba(255,200,40,0) 292deg,
-    rgba(255,220,60,0.22) 297deg, rgba(255,220,60,0) 307deg,
-    rgba(255,190,30,0.16) 314deg, rgba(255,190,30,0) 322deg,
-    rgba(255,220,60,0.20) 330deg, rgba(255,220,60,0) 342deg,
-    rgba(255,200,40,0.18) 348deg, rgba(255,200,40,0) 360deg
+    rgba(255,220,60,0.20) 0deg,rgba(255,220,60,0) 8deg,
+    rgba(255,200,40,0.18) 15deg,rgba(255,200,40,0) 24deg,
+    rgba(255,220,60,0.22) 30deg,rgba(255,220,60,0) 40deg,
+    rgba(255,190,30,0.16) 48deg,rgba(255,190,30,0) 56deg,
+    rgba(255,220,60,0.20) 62deg,rgba(255,220,60,0) 72deg,
+    rgba(255,200,40,0.18) 80deg,rgba(255,200,40,0) 90deg,
+    rgba(255,220,60,0.22) 96deg,rgba(255,220,60,0) 108deg,
+    rgba(255,190,30,0.16) 116deg,rgba(255,190,30,0) 126deg,
+    rgba(255,220,60,0.20) 132deg,rgba(255,220,60,0) 142deg,
+    rgba(255,200,40,0.18) 150deg,rgba(255,200,40,0) 160deg,
+    rgba(255,220,60,0.22) 165deg,rgba(255,220,60,0) 175deg,
+    rgba(255,190,30,0.16) 182deg,rgba(255,190,30,0) 192deg,
+    rgba(255,220,60,0.20) 198deg,rgba(255,220,60,0) 208deg,
+    rgba(255,200,40,0.18) 216deg,rgba(255,200,40,0) 226deg,
+    rgba(255,220,60,0.22) 231deg,rgba(255,220,60,0) 241deg,
+    rgba(255,190,30,0.16) 248deg,rgba(255,190,30,0) 258deg,
+    rgba(255,220,60,0.20) 264deg,rgba(255,220,60,0) 274deg,
+    rgba(255,200,40,0.18) 282deg,rgba(255,200,40,0) 292deg,
+    rgba(255,220,60,0.22) 297deg,rgba(255,220,60,0) 307deg,
+    rgba(255,190,30,0.16) 314deg,rgba(255,190,30,0) 322deg,
+    rgba(255,220,60,0.20) 330deg,rgba(255,220,60,0) 342deg,
+    rgba(255,200,40,0.18) 348deg,rgba(255,200,40,0) 360deg
   );
 }
-/* Sun rays — inner counter-rotating */
 .sun-rays-inner {
   position: absolute;
   inset: 20px;
   border-radius: 50%;
   animation: sunRayInner 10s linear infinite reverse;
-  transform-origin: center;
 }
 .sun-rays-inner::before {
-  content:''; position:absolute; inset:0; border-radius:50%;
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
   background: conic-gradient(
-    rgba(255,240,100,0.25) 0deg,  rgba(255,240,100,0) 10deg,
-    rgba(255,220,60,0.20)  20deg, rgba(255,220,60,0)  32deg,
-    rgba(255,240,100,0.25) 40deg, rgba(255,240,100,0) 52deg,
-    rgba(255,220,60,0.20)  60deg, rgba(255,220,60,0)  72deg,
-    rgba(255,240,100,0.25) 80deg, rgba(255,240,100,0) 92deg,
-    rgba(255,220,60,0.20) 100deg, rgba(255,220,60,0) 112deg,
-    rgba(255,240,100,0.25)120deg, rgba(255,240,100,0)132deg,
-    rgba(255,220,60,0.20)140deg,  rgba(255,220,60,0) 152deg,
-    rgba(255,240,100,0.25)160deg, rgba(255,240,100,0)172deg,
-    rgba(255,220,60,0.20)180deg,  rgba(255,220,60,0) 192deg,
-    rgba(255,240,100,0.25)200deg, rgba(255,240,100,0)212deg,
-    rgba(255,220,60,0.20)220deg,  rgba(255,220,60,0) 232deg,
-    rgba(255,240,100,0.25)240deg, rgba(255,240,100,0)252deg,
-    rgba(255,220,60,0.20)260deg,  rgba(255,220,60,0) 272deg,
-    rgba(255,240,100,0.25)280deg, rgba(255,240,100,0)292deg,
-    rgba(255,220,60,0.20)300deg,  rgba(255,220,60,0) 312deg,
-    rgba(255,240,100,0.25)320deg, rgba(255,240,100,0)332deg,
-    rgba(255,220,60,0.20)340deg,  rgba(255,220,60,0) 352deg,
-    rgba(255,240,100,0.25)360deg
+    rgba(255,240,100,0.25) 0deg,rgba(255,240,100,0) 10deg,
+    rgba(255,220,60,0.20) 20deg,rgba(255,220,60,0) 32deg,
+    rgba(255,240,100,0.25) 40deg,rgba(255,240,100,0) 52deg,
+    rgba(255,220,60,0.20) 60deg,rgba(255,220,60,0) 72deg,
+    rgba(255,240,100,0.25) 80deg,rgba(255,240,100,0) 92deg,
+    rgba(255,220,60,0.20) 100deg,rgba(255,220,60,0) 112deg,
+    rgba(255,240,100,0.25) 120deg,rgba(255,240,100,0) 132deg,
+    rgba(255,220,60,0.20) 140deg,rgba(255,220,60,0) 152deg,
+    rgba(255,240,100,0.25) 160deg,rgba(255,240,100,0) 172deg,
+    rgba(255,220,60,0.20) 180deg,rgba(255,220,60,0) 192deg,
+    rgba(255,240,100,0.25) 200deg,rgba(255,240,100,0) 212deg,
+    rgba(255,220,60,0.20) 220deg,rgba(255,220,60,0) 232deg,
+    rgba(255,240,100,0.25) 240deg,rgba(255,240,100,0) 252deg,
+    rgba(255,220,60,0.20) 260deg,rgba(255,220,60,0) 272deg,
+    rgba(255,240,100,0.25) 280deg,rgba(255,240,100,0) 292deg,
+    rgba(255,220,60,0.20) 300deg,rgba(255,220,60,0) 312deg,
+    rgba(255,240,100,0.25) 320deg,rgba(255,240,100,0) 332deg,
+    rgba(255,220,60,0.20) 340deg,rgba(255,220,60,0) 352deg,
+    rgba(255,240,100,0.25) 360deg
   );
 }
 @keyframes sunRayOuter { to { transform: rotate(360deg); } }
 @keyframes sunRayInner { to { transform: rotate(360deg); } }
 
 /* ══════════════════════════════════════════
-   CLOUDS — LIGHT MODE
+   CLOUDS — light mode
 ══════════════════════════════════════════ */
-.cloud-layer { position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;
-  transition: opacity 2s ease !important; }
-html[data-theme="dark"]  .cloud-layer { opacity:0; transition: opacity 2s ease; }
-html[data-theme="light"] .cloud-layer { opacity:1; transition: opacity 2s ease; }
+.cloud-layer {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+  transition: opacity 0.65s ease;
+}
+html[data-theme="dark"]  .cloud-layer { opacity: 0; }
+html[data-theme="light"] .cloud-layer { opacity: 1; }
 .cloud {
-  position:absolute; border-radius:60px;
+  position: absolute;
+  border-radius: 60px;
   background: rgba(255,255,255,0.75);
   filter: blur(6px);
   animation: cloudDrift linear infinite;
@@ -646,102 +333,427 @@ html[data-theme="light"] .cloud-layer { opacity:1; transition: opacity 2s ease; 
 @keyframes cloudDrift { from{transform:translateX(0)} to{transform:translateX(calc(100vw + 280px))} }
 
 /* ══════════════════════════════════════════
-   THEME TRANSITION — pure CSS element fade
-   
-   NO overlay. NO wipe. NO grey flash.
-   
-   Every colour-bearing element transitions its
-   own background-color / color / border-color
-   over 1.2s. JS only flips [data-theme].
-   Background canvas transitions over 1.8s.
-   Result: everything cross-dissolves together,
-   smooth and professional.
+   THEME TOGGLE BUTTON
 ══════════════════════════════════════════ */
+.theme-toggle {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 9997;
+  width: 54px;
+  height: 30px;
+  border-radius: 15px;
+  border: none;
+  cursor: pointer;
+  padding: 3px;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.3);
+  /* No transition — instant colour change is fine for the toggle itself */
+}
+html[data-theme="dark"]  .theme-toggle { background: linear-gradient(135deg, #1e2d5c, #2e3a6c); }
+html[data-theme="light"] .theme-toggle { background: linear-gradient(135deg, #60a5fa, #93c5fd); }
+.theme-toggle-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* Note: NO background transition here — avoids glitch on thumb */
+}
+html[data-theme="dark"]  .theme-toggle-thumb { transform: translateX(0);    background: #0f1840; }
+html[data-theme="light"] .theme-toggle-thumb { transform: translateX(24px); background: #fef3c7; }
 
-/* All colour transitions — applied globally, NO !important */
-body,
-.sidebar, .main, .shell,
-.card, .stat-box, .auth-box, .modal-box,
-.nav-item, .user-block, .logo,
-.bg-canvas,
-.kana-cell, .daku-cell,
-.kanji-card, .kanji-example-mini,
-.grammar-item, .grammar-example,
-.fc-card, .fc-card-front, .fc-card-back, .fc-example-block,
-.quiz-opt,
-.lb-item,
-.auth-input, .kanji-search,
-.mod-item, .today-card,
-.mobile-bottom-bar,
-.cat-pill, .kf-btn, .auth-tab,
-.modal-close, .logout-btn, .btn-google,
-.lb-refresh, .lb-avatar,
-.save-indicator {
-  transition:
-    background-color 1.2s ease,
-    border-color 1.0s ease,
-    color 0.9s ease,
-    box-shadow 1.0s ease;
+/* ══════════════════════════════════════════
+   AUTH
+══════════════════════════════════════════ */
+#auth-screen{display:none;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+.auth-box{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:40px 36px;width:100%;max-width:400px;animation:authUp .5s cubic-bezier(.22,1,.36,1) both}
+@keyframes authUp{from{opacity:0;transform:translateY(28px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+.auth-logo{font-size:48px;font-family:'Noto Sans JP',sans-serif;color:var(--accent);text-align:center;margin-bottom:6px}
+.auth-subtitle{text-align:center;color:var(--muted);font-size:13px;margin-bottom:28px}
+.auth-tabs{display:flex;border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:24px}
+.auth-tab{flex:1;padding:10px;text-align:center;font-size:13px;font-weight:700;cursor:pointer;color:var(--muted);background:transparent;border:none;font-family:'Nunito',sans-serif}
+.auth-tab.active{background:var(--accent);color:#fff}
+.auth-form{display:flex;flex-direction:column;gap:14px}
+.auth-label{font-size:12px;color:var(--muted);margin-bottom:4px;font-weight:700;letter-spacing:.04em}
+.auth-input{width:100%;padding:12px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Nunito',sans-serif;font-size:14px;outline:none}
+.auth-input:focus{border-color:var(--accent)}
+.auth-input::placeholder{color:var(--muted)}
+.auth-btn{padding:13px;background:var(--accent);border:none;border-radius:10px;color:#fff;font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;cursor:pointer;margin-top:4px}
+.auth-btn:hover{background:#8faaff}
+.auth-btn:disabled{opacity:.5;cursor:not-allowed}
+.auth-error{background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.3);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--red);display:none}
+.auth-success{background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.25);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--green);display:none}
+.auth-divider{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12px}
+.auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.btn-google{padding:12px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-google:hover{border-color:var(--accent)}
+
+/* ══════════════════════════════════════════
+   LOADING
+══════════════════════════════════════════ */
+#loading-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;flex-direction:column;gap:16px}
+.spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ══════════════════════════════════════════
+   APP LAYOUT
+══════════════════════════════════════════ */
+#app-screen{display:none}
+.shell{display:flex;min-height:100vh}
+.sidebar{width:220px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:20px 0;position:sticky;top:0;height:100vh;overflow-y:auto}
+.main{flex:1;overflow-y:auto}
+.logo{padding:0 20px 16px;border-bottom:1px solid var(--border)}
+.logo-jp{font-size:26px;font-weight:700;color:var(--accent);font-family:'Noto Sans JP',sans-serif}
+.logo-en{font-size:10px;color:var(--muted);margin-top:2px;letter-spacing:.06em}
+.nav-section{margin:14px 0 4px;padding:0 20px;font-size:10px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;cursor:pointer;font-size:13px;font-weight:600;color:var(--muted);border-left:3px solid transparent}
+.nav-item:hover{color:var(--text);background:rgba(255,255,255,.04)}
+.nav-item.active{color:var(--accent);border-left-color:var(--accent);background:rgba(108,143,255,.08)}
+.nav-icon{font-size:15px;width:20px;text-align:center}
+.user-block{margin-top:auto;padding:14px 20px;border-top:1px solid var(--border)}
+.user-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.user-avatar{width:34px;height:34px;border-radius:50%;background:rgba(108,143,255,.2);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--accent);flex-shrink:0}
+.user-name{font-size:12px;font-weight:700}
+.user-email{font-size:10px;color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px}
+.xp-top{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:5px}
+.xp-bar{height:5px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.xp-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:3px;transition:width .5s}
+.streak-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(251,191,36,.12);color:var(--yellow);font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;margin-top:8px;animation:streakPulse 2.5s ease infinite}
+@keyframes streakPulse{0%,100%{box-shadow:0 0 0 0 rgba(251,191,36,.5)}50%{box-shadow:0 0 0 8px rgba(251,191,36,0)}}
+.logout-btn{width:100%;padding:8px;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;cursor:pointer;margin-top:8px}
+.logout-btn:hover{border-color:var(--red);color:var(--red)}
+
+/* ══════════════════════════════════════════
+   PAGES
+══════════════════════════════════════════ */
+.page{display:none;padding:24px;max-width:960px}
+.page.active{display:block;animation:pageIn .35s cubic-bezier(.22,1,.36,1) both}
+@keyframes pageIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.page-title{font-size:22px;font-weight:700;margin-bottom:6px}
+.page-title span{color:var(--accent)}
+.page-sub{font-size:13px;color:var(--muted);margin-bottom:20px}
+
+/* ══════════════════════════════════════════
+   CARDS
+══════════════════════════════════════════ */
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 20px}
+.card+.card{margin-top:14px}
+.card-label{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin-bottom:12px}
+
+/* ══════════════════════════════════════════
+   DASHBOARD
+══════════════════════════════════════════ */
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px}
+.stat-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px}
+.stat-box:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(108,143,255,.08)}
+.stat-num{font-size:28px;font-weight:700}
+.stat-lbl{font-size:12px;color:var(--muted);margin-top:2px}
+.mod-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mod-item{background:var(--bg3);border-radius:10px;padding:12px 14px;cursor:pointer;border:1px solid transparent}
+.mod-item:hover{border-color:var(--accent);transform:translateY(-1px)}
+.mod-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.mod-name{font-size:13px;font-weight:700}
+.mod-pct{font-size:12px;color:var(--muted)}
+.prog-bar{height:5px;background:var(--bg2);border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;border-radius:3px}
+.today-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:4px}
+.today-card{background:var(--bg3);border-radius:10px;padding:12px;cursor:pointer;border:1px solid var(--border)}
+.today-card:hover{border-color:var(--accent2);transform:translateY(-2px)}
+.today-tag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;display:inline-block;margin-bottom:6px}
+.tag-new{background:rgba(108,143,255,.18);color:var(--accent)}
+.tag-review{background:rgba(74,222,128,.15);color:var(--green)}
+.tag-quiz{background:rgba(251,191,36,.15);color:var(--yellow)}
+.today-jp{font-size:24px;font-family:'Noto Sans JP',sans-serif;font-weight:700}
+.today-rom{font-size:11px;color:var(--muted)}
+.today-id{font-size:12px;margin-top:3px}
+
+/* ══════════════════════════════════════════
+   KANA GRID
+══════════════════════════════════════════ */
+.kana-row-group{margin-bottom:8px;display:grid;grid-template-columns:36px repeat(5,1fr);gap:6px;align-items:center}
+.kana-row-label{font-size:10px;color:var(--muted);display:flex;align-items:center;justify-content:center;font-weight:700}
+.kana-cell{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 4px;text-align:center;cursor:pointer}
+.kana-cell:hover{border-color:var(--accent);background:rgba(108,143,255,.12);transform:scale(1.08)}
+.kana-cell:active{transform:scale(.94)}
+.kana-cell.learned{border-color:var(--green);background:rgba(74,222,128,.08)}
+.kana-jp{font-size:22px;font-family:'Noto Sans JP',sans-serif;font-weight:500}
+.kana-rom{font-size:10px;color:var(--muted);margin-top:2px}
+
+/* ══════════════════════════════════════════
+   FLASHCARD 3D FLIP
+══════════════════════════════════════════ */
+.fc-wrap{display:flex;flex-direction:column;align-items:center;gap:18px;padding:10px 0}
+.fc-cat-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.cat-pill{padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;cursor:pointer}
+.cat-pill.active{background:var(--accent2);border-color:var(--accent2);color:#fff}
+.fc-prog{font-size:12px;color:var(--muted)}
+.fc-card-wrapper{perspective:1000px;width:100%;max-width:440px}
+.fc-card{
+  width:100%;transform-style:preserve-3d;
+  transition:transform .55s cubic-bezier(.22,1,.36,1),box-shadow .3s ease,border-color .3s ease;
+  position:relative;cursor:pointer;min-height:240px;
+  background:var(--card);border:1px solid var(--border);border-radius:20px;
+  padding:36px 32px;text-align:center;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px
+}
+.fc-card:hover{box-shadow:0 20px 60px rgba(108,143,255,.18);border-color:rgba(108,143,255,.45)}
+.fc-card.flipped{transform:rotateY(180deg)}
+.fc-card-front,.fc-card-back{
+  backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:36px 32px;gap:10px;border-radius:20px;
+  background:var(--card);border:1px solid var(--border)
+}
+.fc-card-back{transform:rotateY(180deg)}
+@keyframes slideOut{to{opacity:0;transform:translateX(-70px) scale(.9)}}
+@keyframes slideIn{from{opacity:0;transform:translateX(70px) scale(.9)}to{opacity:1;transform:translateX(0) scale(1)}}
+.fc-card.slide-out{animation:slideOut .22s ease forwards}
+.fc-card.slide-in{animation:slideIn .32s cubic-bezier(.22,1,.36,1) forwards}
+.fc-kanji{font-size:60px;font-family:'Noto Sans JP',sans-serif;font-weight:700;line-height:1.1}
+.fc-hiragana{font-size:22px;font-family:'Noto Sans JP',sans-serif;color:var(--accent);font-weight:500}
+.fc-katakana{font-size:16px;font-family:'Noto Sans JP',sans-serif;color:var(--teal);font-weight:400}
+.fc-romaji{font-size:15px;color:var(--muted)}
+.fc-meaning{font-size:16px;font-weight:700}
+.fc-example-block{background:var(--bg3);border-radius:10px;padding:12px 16px;width:100%;text-align:left;margin-top:4px}
+.fc-ex-jp{font-family:'Noto Sans JP',sans-serif;font-size:14px}
+.fc-ex-rom{font-size:12px;color:var(--muted);margin-top:2px}
+.fc-ex-id{font-size:12px;color:var(--text);margin-top:2px}
+.fc-hint{font-size:12px;color:var(--muted)}
+.fc-btns{display:flex;gap:12px;width:100%;max-width:440px}
+.fc-btn{flex:1;padding:12px;border-radius:12px;border:none;font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;cursor:pointer}
+.fc-btn:hover{transform:translateY(-2px)}
+.fc-btn:active{transform:scale(.95) translateY(2px)}
+.btn-lupa{background:rgba(248,113,113,.15);color:var(--red);border:1px solid rgba(248,113,113,.3)}
+.btn-agak{background:rgba(251,191,36,.12);color:var(--yellow);border:1px solid rgba(251,191,36,.25)}
+.btn-hafal{background:rgba(74,222,128,.12);color:var(--green);border:1px solid rgba(74,222,128,.25)}
+@keyframes xpPop{0%{transform:scale(1)}40%{transform:scale(1.5);color:var(--yellow)}100%{transform:scale(1)}}
+.xp-burst{animation:xpPop .5s ease}
+
+/* ══════════════════════════════════════════
+   QUIZ
+══════════════════════════════════════════ */
+.quiz-jp-big{font-size:52px;font-family:'Noto Sans JP',sans-serif;font-weight:700;text-align:center;margin:12px 0 4px}
+.quiz-furigana{font-size:16px;font-family:'Noto Sans JP',sans-serif;color:var(--accent);text-align:center;margin-bottom:16px}
+.quiz-options{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.quiz-opt{padding:14px 18px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;cursor:pointer;font-size:14px;font-weight:600;text-align:left;font-family:'Nunito',sans-serif;color:var(--text)}
+.quiz-opt:hover{border-color:var(--accent)}
+.quiz-opt:active{transform:scale(.98)}
+.quiz-opt.correct{border-color:var(--green);background:rgba(74,222,128,.12);color:var(--green)}
+.quiz-opt.wrong{border-color:var(--red);background:rgba(248,113,113,.1);color:var(--red)}
+.quiz-score-big{font-size:52px;font-weight:700;color:var(--accent);text-align:center}
+.quiz-meta{font-size:14px;color:var(--muted);text-align:center;margin-top:6px}
+.btn-primary{padding:12px 28px;background:var(--accent);border:none;border-radius:10px;color:#fff;font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;cursor:pointer;margin-top:16px;display:block}
+.btn-primary:hover{background:#8faaff}
+@keyframes shakeIt{0%,100%{transform:translateX(0)}20%{transform:translateX(-9px)}40%{transform:translateX(9px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+@keyframes popIt{0%{transform:scale(1)}40%{transform:scale(1.07)}100%{transform:scale(1)}}
+.shake-wrong{animation:shakeIt .4s ease}
+.pop-correct{animation:popIt .3s ease}
+
+/* ══════════════════════════════════════════
+   GRAMMAR
+══════════════════════════════════════════ */
+.grammar-item{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin-bottom:12px}
+.grammar-pattern{font-size:18px;font-weight:700;color:var(--accent2);font-family:'Noto Sans JP',sans-serif;margin-bottom:4px}
+.grammar-label{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.06em;margin-bottom:4px}
+.grammar-desc{font-size:13px;margin-bottom:10px;line-height:1.7}
+.grammar-example{background:var(--bg3);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:12px 14px;margin-top:8px}
+.grammar-ex-jp{font-family:'Noto Sans JP',sans-serif;font-size:16px;font-weight:500}
+.grammar-ex-kana{font-size:13px;color:var(--accent);font-family:'Noto Sans JP',sans-serif;margin-top:2px}
+.grammar-ex-rom{font-size:12px;color:var(--muted);margin-top:2px}
+.grammar-ex-id{font-size:13px;margin-top:4px}
+
+/* ══════════════════════════════════════════
+   KAMUS KANJI
+══════════════════════════════════════════ */
+.kanji-search-row{display:flex;gap:10px;margin-bottom:16px}
+.kanji-search{flex:1;padding:11px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Nunito',sans-serif;font-size:14px;outline:none}
+.kanji-search:focus{border-color:var(--accent)}
+.kanji-filter{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.kf-btn{padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;cursor:pointer}
+.kf-btn.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.kanji-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.kanji-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;gap:14px;align-items:flex-start;cursor:pointer}
+.kanji-card:hover{border-color:var(--accent2);transform:translateY(-2px);box-shadow:0 6px 24px rgba(167,139,250,.12)}
+.kanji-char{font-size:48px;font-family:'Noto Sans JP',sans-serif;font-weight:700;color:var(--accent);line-height:1;min-width:56px;text-align:center}
+.kanji-info{flex:1;min-width:0}
+.kanji-meaning{font-size:14px;font-weight:700;margin-bottom:4px}
+.kanji-readings{font-size:12px;color:var(--muted);font-family:'Noto Sans JP',sans-serif;line-height:1.7}
+.kanji-reading-label{font-size:10px;text-transform:uppercase;letter-spacing:.05em;margin-right:4px}
+.kanji-on{color:var(--accent)}
+.kanji-kun{color:var(--teal)}
+.kanji-example-mini{font-size:12px;color:var(--text);margin-top:6px;font-family:'Noto Sans JP',sans-serif;background:var(--bg3);border-radius:6px;padding:6px 10px;line-height:1.6}
+
+/* ══════════════════════════════════════════
+   DAKUON
+══════════════════════════════════════════ */
+.daku-section{margin-bottom:28px}
+.daku-title{font-size:15px;font-weight:700;color:var(--yellow);margin-bottom:4px}
+.daku-desc{font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6}
+.daku-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px}
+.daku-cell{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 6px;text-align:center;cursor:pointer}
+.daku-cell:hover{border-color:var(--yellow);transform:scale(1.06)}
+.daku-cell:active{transform:scale(.95)}
+.daku-cell.learned{border-color:var(--green);background:rgba(74,222,128,.08)}
+.daku-main{font-size:26px;font-family:'Noto Sans JP',sans-serif;font-weight:500}
+.daku-sub{font-size:11px;color:var(--muted);margin-top:3px}
+.daku-from{font-size:10px;color:var(--yellow);margin-top:2px}
+
+/* ══════════════════════════════════════════
+   MODAL
+══════════════════════════════════════════ */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.show{display:flex}
+.modal-box{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:28px;max-width:500px;width:100%;max-height:90vh;overflow-y:auto}
+.modal-kanji{font-size:80px;font-family:'Noto Sans JP',sans-serif;font-weight:700;color:var(--accent);text-align:center;line-height:1}
+.modal-meaning{font-size:20px;font-weight:700;text-align:center;margin:8px 0 16px}
+.modal-row{display:flex;gap:8px;margin-bottom:8px;align-items:flex-start}
+.modal-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;min-width:70px;padding-top:2px}
+.modal-val{font-size:14px;font-family:'Noto Sans JP',sans-serif;line-height:1.7}
+.modal-close{display:block;margin:16px auto 0;padding:10px 28px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--muted);font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;cursor:pointer}
+.modal-close:hover{border-color:var(--accent);color:var(--accent)}
+
+/* ══════════════════════════════════════════
+   LEADERBOARD
+══════════════════════════════════════════ */
+.lb-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.lb-refresh{padding:6px 16px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;color:var(--muted);font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;cursor:pointer}
+.lb-refresh:hover{border-color:var(--accent);color:var(--accent)}
+.lb-list{display:flex;flex-direction:column;gap:10px}
+.lb-item{display:flex;align-items:center;gap:14px;background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:13px 16px;animation:lbIn .4s cubic-bezier(.22,1,.36,1) both}
+@keyframes lbIn{from{opacity:0;transform:translateX(-24px)}to{opacity:1;transform:translateX(0)}}
+.lb-item:hover{border-color:var(--accent);transform:translateX(6px)}
+.lb-item.me{border-color:var(--accent2);background:rgba(167,139,250,.08)}
+.lb-rank{font-size:20px;font-weight:800;min-width:36px;text-align:center}
+.lb-rank.gold{color:#fbbf24;text-shadow:0 0 12px rgba(251,191,36,.6)}
+.lb-rank.silver{color:#94a3b8}
+.lb-rank.bronze{color:#cd7c47}
+.lb-rank.other{color:var(--muted);font-size:15px}
+.lb-avatar{width:40px;height:40px;border-radius:50%;background:rgba(108,143,255,.2);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:var(--accent);flex-shrink:0}
+.lb-item.me .lb-avatar{border:2px solid var(--accent2)}
+.lb-info{flex:1;min-width:0}
+.lb-name{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lb-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.lb-xp{font-size:15px;font-weight:800;color:var(--accent);white-space:nowrap}
+.lb-empty,.lb-loading{text-align:center;padding:40px;color:var(--muted);font-size:14px}
+.lb-loading{animation:pulse 1.5s ease infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+
+/* ══════════════════════════════════════════
+   SAVE INDICATOR
+══════════════════════════════════════════ */
+.save-indicator{position:fixed;bottom:20px;right:20px;background:var(--card);border:1px solid var(--green);border-radius:10px;padding:8px 14px;font-size:12px;color:var(--green);font-weight:700;opacity:0;pointer-events:none;z-index:999;transition:opacity .3s}
+.save-indicator.show{opacity:1}
+
+/* ══════════════════════════════════════════
+   LIGHT MODE SHADOW POLISH
+══════════════════════════════════════════ */
+html[data-theme="light"] .auth-box   { box-shadow: 0 8px 40px rgba(37,99,235,.12); }
+html[data-theme="light"] .card,
+html[data-theme="light"] .stat-box   { box-shadow: 0 2px 12px rgba(0,30,100,.08); }
+html[data-theme="light"] .sidebar    { box-shadow: 2px 0 12px rgba(0,30,100,.08); }
+html[data-theme="light"] .modal-box  { box-shadow: 0 16px 64px rgba(0,30,100,.14); }
+
+/* ══════════════════════════════════════════
+   MOBILE BOTTOM BAR
+══════════════════════════════════════════ */
+.mobile-bottom-bar { display: none; }
+@media(max-width:640px) {
+  .mobile-bottom-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: fixed;
+    bottom: 0; left: 56px; right: 0;
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    padding: 8px 14px;
+    z-index: 100;
+    gap: 10px;
+    /* Use same transition as other elements — no !important */
+    transition: background-color 0.65s ease, border-color 0.55s ease;
+  }
+  .mobile-bottom-bar .streak-badge { margin-top: 0; font-size: 12px; }
+  .mobile-bottom-bar .logout-btn   { width: auto; margin-top: 0; padding: 7px 14px; font-size: 12px; flex-shrink: 0; }
+  .mobile-bottom-bar .mob-xp       { font-size: 11px; color: var(--muted); white-space: nowrap; }
+  .main { padding-bottom: 56px; }
 }
 
-/* Background canvas — slightly longer for a cinematic feel */
-.bg-canvas { transition: background 1.8s ease; }
-
-/* Blobs and background layers */
-.bg-blob          { transition: opacity 1.8s ease; }
-.stars-layer      { transition: opacity 1.8s ease; }
-.sun-wrap         { transition: opacity 1.8s ease; }
-.cloud-layer      { transition: opacity 1.8s ease; }
-
-/* Fast interactive overrides — hover/press should be instant */
-.kana-cell:hover,
-.kana-cell:active  { transition: background-color 0.1s ease, border-color 0.1s ease, transform 0.18s cubic-bezier(0.34,1.56,0.64,1); }
-.daku-cell:hover,
-.daku-cell:active  { transition: background-color 0.1s ease, border-color 0.1s ease, transform 0.18s cubic-bezier(0.34,1.56,0.64,1); }
-button:hover,
-button:active      { transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.1s ease; }
-.nav-item:hover    { transition: background-color 0.15s ease, color 0.15s ease; }
-
-/* Theme-wipe not used */
-#theme-wipe { display: none; }
-
+/* ══════════════════════════════════════════
+   MOBILE LAYOUT FIXES
+   Note: NO transition overrides here — they inherit from the base rules above
+══════════════════════════════════════════ */
+@media(max-width:640px) {
+  .sidebar { width: 56px; }
+  .sidebar .logo-en,.sidebar .nav-item span:last-child,.sidebar .nav-section,
+  .sidebar .xp-top,.sidebar .streak-badge,.sidebar .user-name,.sidebar .user-email,
+  .sidebar .logout-btn,.sidebar .user-block { display: none; }
+  .logo-jp { font-size: 18px; }
+  .nav-item { padding: 12px; justify-content: center; }
+  .nav-icon { width: auto; }
+  .stat-grid { grid-template-columns: 1fr 1fr; }
+  .today-grid { grid-template-columns: 1fr 1fr; }
+  .quiz-options { grid-template-columns: 1fr; }
+  .kanji-grid { grid-template-columns: 1fr; }
+  .fc-btns { gap: 8px; }
+  .fc-btn { padding: 11px 6px; font-size: 12px; }
+  .theme-toggle { top: 10px; right: 10px; }
+}
+@media(max-width:480px) {
+  .stat-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .mod-grid { grid-template-columns: 1fr; }
+  .today-grid { grid-template-columns: 1fr; gap: 8px; }
+  .page { padding: 14px 12px; }
+  .page-title { font-size: 18px; }
+  .fc-card-wrapper { max-width: 100%; }
+  .fc-card { min-height: 200px; padding: 22px 16px; }
+  .fc-card-front,.fc-card-back { padding: 22px 16px; }
+  .fc-kanji { font-size: 40px; }
+  .fc-hiragana { font-size: 17px; }
+  .fc-btns { flex-direction: column; gap: 8px; width: 100%; }
+  .fc-btn { padding: 14px; font-size: 13px; }
+  .cat-pill { padding: 5px 9px; font-size: 10px; }
+  .card { padding: 12px; }
+}
 </style>
 </head>
 <body>
 
 <!-- BACKGROUND LAYERS -->
 <div class="bg-canvas" id="bg-canvas">
-  <!-- Dark mode blobs -->
   <div class="bg-blob bg-blob-d1"></div>
   <div class="bg-blob bg-blob-d2"></div>
   <div class="bg-blob bg-blob-d3"></div>
-  <!-- Light mode blobs -->
   <div class="bg-blob bg-blob-l1"></div>
   <div class="bg-blob bg-blob-l2"></div>
   <div class="bg-blob bg-blob-l3"></div>
 </div>
-<!-- Stars (dark mode) -->
 <div class="stars-layer" id="stars-layer"></div>
-<!-- Sun (light mode) -->
 <div class="sun-wrap">
   <div class="sun-rays-outer"></div>
   <div class="sun-rays-inner"></div>
   <div class="sun-core"></div>
 </div>
-<!-- Clouds (light mode) -->
 <div class="cloud-layer">
   <div class="cloud cloud1"></div>
   <div class="cloud cloud2"></div>
   <div class="cloud cloud3"></div>
 </div>
-<!-- Theme wipe transition -->
-<div class="theme-wipe" id="theme-wipe"></div>
-<!-- Theme toggle button -->
-<button class="theme-toggle" id="theme-toggle-btn" onclick="toggleTheme()" title="Ganti tema">
+
+<!-- THEME WIPE OVERLAY — single neutral div, colour set by JS -->
+<div id="theme-wipe"></div>
+
+<!-- Theme toggle -->
+<button class="theme-toggle" onclick="toggleTheme()" title="Ganti tema">
   <div class="theme-toggle-thumb" id="theme-thumb">🌙</div>
 </button>
 
-<!-- LOADING — ditampilkan saat halaman pertama kali dibuka -->
+<!-- LOADING -->
 <div id="loading-screen">
   <div class="spinner"></div>
   <div style="color:var(--muted);font-size:13px">Memuat aplikasi...</div>
@@ -810,7 +822,6 @@ button:active      { transition: background-color 0.15s ease, border-color 0.15s
     <button class="logout-btn" onclick="doLogout()">Keluar</button>
   </div>
 </nav>
-<!-- MOBILE BOTTOM BAR — logout + streak visible on mobile -->
 <div class="mobile-bottom-bar" id="mobile-bottom-bar">
   <div class="mob-xp">XP: <strong id="mob-xp-val">0</strong></div>
   <div class="streak-badge">🔥 <span id="mob-streak-val">0</span> hari</div>
@@ -874,19 +885,16 @@ button:active      { transition: background-color 0.15s ease, border-color 0.15s
   <div class="page-sub">Klik huruf untuk tandai hafal.</div>
   <div id="hiragana-grid"></div>
 </div>
-
 <div class="page" id="page-katakana">
   <div class="page-title">Katakana <span>カタカナ</span></div>
   <div class="page-sub">Katakana untuk kata serapan asing.</div>
   <div id="katakana-grid"></div>
 </div>
-
 <div class="page" id="page-dakuon">
   <div class="page-title">Dakuon, Handakuon <span>& Youon</span></div>
   <div class="page-sub">Variasi aksara yang mengubah bunyi. Klik untuk tandai hafal.</div>
   <div id="dakuon-content"></div>
 </div>
-
 <div class="page" id="page-flashcard">
   <div class="page-title">Flashcard <span>SRS</span></div>
   <div class="page-sub">Klik kartu untuk buka arti. Animasi flip 3D!</div>
@@ -897,7 +905,7 @@ button:active      { transition: background-color 0.15s ease, border-color 0.15s
       <div class="fc-card" id="fc-card" onclick="flipCard()">
         <div class="fc-card-front">
           <div class="fc-kanji jp" id="fc-kanji">会社</div>
-          <div class="fc-hint" id="fc-hint">Ketuk untuk lihat bacaan & arti ↓</div>
+          <div class="fc-hint">Ketuk untuk lihat bacaan & arti ↓</div>
         </div>
         <div class="fc-card-back">
           <div class="fc-kanji jp" id="fc-kanji-back" style="font-size:42px"></div>
@@ -905,7 +913,7 @@ button:active      { transition: background-color 0.15s ease, border-color 0.15s
           <div class="fc-katakana" id="fc-katakana"></div>
           <div class="fc-romaji" id="fc-romaji"></div>
           <div class="fc-meaning" id="fc-meaning"></div>
-          <div class="fc-example-block" id="fc-example-block">
+          <div class="fc-example-block">
             <div class="fc-ex-jp jp" id="fc-ex-jp"></div>
             <div class="fc-ex-rom" id="fc-ex-rom"></div>
             <div class="fc-ex-id" id="fc-ex-id"></div>
@@ -921,19 +929,16 @@ button:active      { transition: background-color 0.15s ease, border-color 0.15s
     <p style="font-size:11px;color:var(--muted);text-align:center;max-width:420px;margin-top:4px">Biru = hiragana · Teal = katakana · Progress tersimpan otomatis</p>
   </div>
 </div>
-
 <div class="page" id="page-grammar">
   <div class="page-title">Grammar <span>N5</span></div>
   <div class="page-sub">Pola kalimat dasar dengan contoh.</div>
   <div id="grammar-list"></div>
 </div>
-
 <div class="page" id="page-quiz">
   <div class="page-title">Quiz Harian <span>N5</span></div>
   <div class="page-sub">Setiap soal menampilkan kanji + furigana.</div>
   <div id="quiz-area"></div>
 </div>
-
 <div class="page" id="page-kamus">
   <div class="page-title">Kamus Kanji <span>N5</span></div>
   <div class="page-sub">103 kanji dasar N5. Klik untuk detail lengkap.</div>
@@ -943,20 +948,15 @@ button:active      { transition: background-color 0.15s ease, border-color 0.15s
   <div class="kanji-filter" id="kanji-filter"></div>
   <div class="kanji-grid" id="kanji-grid"></div>
 </div>
-
 <div class="page" id="page-leaderboard">
   <div class="page-title">Leaderboard <span>🏆</span></div>
   <div class="page-sub">Top pelajar berdasarkan XP. Semangat belajar!</div>
   <div class="card">
     <div class="lb-header">
-      <div class="lb-title-wrap">
-        <span style="font-size:13px;font-weight:700;color:var(--muted)">Top 20 · Semua Pengguna</span>
-      </div>
+      <span style="font-size:13px;font-weight:700;color:var(--muted)">Top 20 · Semua Pengguna</span>
       <button class="lb-refresh" onclick="loadLeaderboard()">↻ Refresh</button>
     </div>
-    <div class="lb-list" id="lb-list">
-      <div class="lb-loading">Memuat leaderboard...</div>
-    </div>
+    <div class="lb-list" id="lb-list"><div class="lb-loading">Memuat leaderboard...</div></div>
   </div>
 </div>
 
@@ -975,25 +975,20 @@ button:active      { transition: background-color 0.15s ease, border-color 0.15s
     <button class="modal-close" onclick="document.getElementById('kanji-modal').classList.remove('show')">Tutup</button>
   </div>
 </div>
-
 <div class="save-indicator" id="save-indicator">✓ Tersimpan</div>
 
 <script>
-// ══════════════════════════════════════════════════
-// STATE
-// ══════════════════════════════════════════════════
-let currentUser = null, userProgress = {};
-let learnedH = [], learnedK = [], learnedD = [], learnedVocab = {};
-let saveTimer = null;
-let fcCategory = 'kerja', fcCards = [], fcIndex = 0, fcFlipped = false;
-let quizIndex = 0, quizScore = 0, quizAnswered = false, quizQuestions = [];
-let kanjiFilter = 'semua', kanjiSearch = '';
-let themeToggleLocked = false;
+// ══ STATE ══
+let currentUser=null,userProgress={};
+let learnedH=[],learnedK=[],learnedD=[],learnedVocab={};
+let saveTimer=null;
+let fcCategory='kerja',fcCards=[],fcIndex=0,fcFlipped=false;
+let quizIndex=0,quizScore=0,quizAnswered=false,quizQuestions=[];
+let kanjiFilter='semua',kanjiSearch='';
+let themeToggleLocked=false;
 
-// ══════════════════════════════════════════════════
-// DATA
-// ══════════════════════════════════════════════════
-const HIRAGANA = [
+// ══ DATA (preserved from original) ══
+const HIRAGANA=[
   {row:'a',chars:[{jp:'あ',r:'a'},{jp:'い',r:'i'},{jp:'う',r:'u'},{jp:'え',r:'e'},{jp:'お',r:'o'}]},
   {row:'k',chars:[{jp:'か',r:'ka'},{jp:'き',r:'ki'},{jp:'く',r:'ku'},{jp:'け',r:'ke'},{jp:'こ',r:'ko'}]},
   {row:'s',chars:[{jp:'さ',r:'sa'},{jp:'し',r:'shi'},{jp:'す',r:'su'},{jp:'せ',r:'se'},{jp:'そ',r:'so'}]},
@@ -1006,7 +1001,7 @@ const HIRAGANA = [
   {row:'w',chars:[{jp:'わ',r:'wa'},{jp:'',r:''},{jp:'',r:''},{jp:'',r:''},{jp:'を',r:'wo'}]},
   {row:'ん',chars:[{jp:'ん',r:'n'},{jp:'',r:''},{jp:'',r:''},{jp:'',r:''},{jp:'',r:''}]},
 ];
-const KATAKANA = [
+const KATAKANA=[
   {row:'a',chars:[{jp:'ア',r:'a'},{jp:'イ',r:'i'},{jp:'ウ',r:'u'},{jp:'エ',r:'e'},{jp:'オ',r:'o'}]},
   {row:'k',chars:[{jp:'カ',r:'ka'},{jp:'キ',r:'ki'},{jp:'ク',r:'ku'},{jp:'ケ',r:'ke'},{jp:'コ',r:'ko'}]},
   {row:'s',chars:[{jp:'サ',r:'sa'},{jp:'シ',r:'shi'},{jp:'ス',r:'su'},{jp:'セ',r:'se'},{jp:'ソ',r:'so'}]},
@@ -1019,7 +1014,7 @@ const KATAKANA = [
   {row:'w',chars:[{jp:'ワ',r:'wa'},{jp:'',r:''},{jp:'',r:''},{jp:'',r:''},{jp:'ヲ',r:'wo'}]},
   {row:'ン',chars:[{jp:'ン',r:'n'},{jp:'',r:''},{jp:'',r:''},{jp:'',r:''},{jp:'',r:''}]},
 ];
-const DAKUON_DATA = {
+const DAKUON_DATA={
   dakuon:{title:'Dakuon (濁音) — Suara Bersuara',desc:'Dakuon ditandai dengan tanda ゛di kanan atas huruf. Contoh: か (ka) → が (ga)',items:[
     {jp:'が',r:'ga',from:'か'},{jp:'ぎ',r:'gi',from:'き'},{jp:'ぐ',r:'gu',from:'く'},{jp:'げ',r:'ge',from:'け'},{jp:'ご',r:'go',from:'こ'},
     {jp:'ざ',r:'za',from:'さ'},{jp:'じ',r:'ji',from:'し'},{jp:'ず',r:'zu',from:'す'},{jp:'ぜ',r:'ze',from:'せ'},{jp:'ぞ',r:'zo',from:'そ'},
@@ -1043,7 +1038,7 @@ const DAKUON_DATA = {
     {jp:'ぴゃ',r:'pya',from:'ぴ+ゃ'},{jp:'ぴゅ',r:'pyu',from:'ぴ+ゅ'},{jp:'ぴょ',r:'pyo',from:'ぴ+ょ'},
   ]}
 };
-const VOCAB = {
+const VOCAB={
   kerja:[
     {jp:'会社',h:'かいしゃ',k:'カイシャ',r:'kaisha',id:'Perusahaan',ex:{jp:'会社で働きます。',h:'かいしゃではたらきます。',r:'Kaisha de hatarakimasu.',id:'Saya bekerja di perusahaan.'}},
     {jp:'仕事',h:'しごと',k:'シゴト',r:'shigoto',id:'Pekerjaan',ex:{jp:'仕事は大変です。',h:'しごとはたいへんです。',r:'Shigoto wa taihen desu.',id:'Pekerjaan itu berat.'}},
@@ -1108,7 +1103,7 @@ const VOCAB = {
     {jp:'いただきます',h:'いただきます',k:'イタダキマス',r:'itadakimasu',id:'Sebelum makan',ex:{jp:'いただきます！',h:'いただきます！',r:'Itadakimasu!',id:'Selamat makan!'}},
   ],
 };
-const KANJI_LIST = [
+const KANJI_LIST=[
   {k:'日',m:'Matahari / Hari',on:'ニチ・ジツ',kun:'ひ・か',s:4,cat:'waktu',ex:[{w:'日本',r:'にほん',t:'Jepang'},{w:'今日',r:'きょう',t:'Hari ini'},{w:'日曜日',r:'にちようび',t:'Minggu'}]},
   {k:'月',m:'Bulan / Senin',on:'ゲツ・ガツ',kun:'つき',s:4,cat:'waktu',ex:[{w:'月曜日',r:'げつようび',t:'Senin'},{w:'一月',r:'いちがつ',t:'Januari'}]},
   {k:'火',m:'Api / Selasa',on:'カ',kun:'ひ',s:4,cat:'alam',ex:[{w:'火曜日',r:'かようび',t:'Selasa'},{w:'火事',r:'かじ',t:'Kebakaran'}]},
@@ -1210,7 +1205,7 @@ const KANJI_LIST = [
   {k:'物',m:'Benda / Hal',on:'ブツ・モツ',kun:'もの',s:8,cat:'benda',ex:[{w:'物',r:'もの',t:'Benda'},{w:'食べ物',r:'たべもの',t:'Makanan'}]},
   {k:'所',m:'Tempat',on:'ショ・ジョ',kun:'ところ',s:8,cat:'tempat',ex:[{w:'場所',r:'ばしょ',t:'Lokasi'},{w:'住所',r:'じゅうしょ',t:'Alamat'}]},
 ];
-const GRAMMAR = [
+const GRAMMAR=[
   {pattern:'〜は〜です',nama:'Pola identitas dasar',desc:'"は" (wa) = penanda topik, "です" (desu) = kata kerja sopan "adalah".',
    contoh:[{jp:'私は会社員です。',kana:'わたしはかいしゃいんです。',r:'Watashi wa kaishain desu.',id:'Saya adalah karyawan perusahaan.'},{jp:'これは本です。',kana:'これはほんです。',r:'Kore wa hon desu.',id:'Ini adalah buku.'}]},
   {pattern:'〜を〜ます',nama:'Pola kalimat kerja sopan',desc:'"を" (wo/o) = penanda objek. Kata kerja bentuk "-masu" untuk percakapan formal.',
@@ -1228,7 +1223,7 @@ const GRAMMAR = [
   {pattern:'〜ことができます',nama:'Bisa / Mampu melakukan',desc:'Kata benda + ことができます = menyatakan kemampuan.',
    contoh:[{jp:'日本語を話すことができます。',kana:'にほんごをはなすことができます。',r:'Nihongo o hanasu koto ga dekimasu.',id:'Saya bisa berbicara bahasa Jepang.'},{jp:'運転することができます。',kana:'うんてんすることができます。',r:'Unten suru koto ga dekimasu.',id:'Saya bisa mengemudi.'}]},
 ];
-const QUIZ_DATA = [
+const QUIZ_DATA=[
   {q:'会社 artinya...',jp:'会社',h:'かいしゃ',opts:['Pekerjaan','Perusahaan','Pabrik','Gaji'],ans:1},
   {q:'Bagaimana cara baca 仕事?',jp:'仕事',h:'しごと',opts:['kaisha','kyūryō','shigoto','zangyō'],ans:2},
   {q:'"Saya ingin bekerja di Jepang":',jp:'日本で働き___です',h:'にほんではたらき___です',opts:['ます','たい','ません','います'],ans:1},
@@ -1246,304 +1241,238 @@ const QUIZ_DATA = [
   {q:'毎日 artinya...',jp:'毎日',h:'まいにち',opts:['Setiap minggu','Setiap bulan','Setiap tahun','Setiap hari'],ans:3},
 ];
 
-// ══════════════════════════════════════════════════
-// SCREEN
-// ══════════════════════════════════════════════════
-function showScreen(s) {
-  document.getElementById('loading-screen').style.display = 'none';
-  document.getElementById('auth-screen').style.display = s === 'auth' ? 'flex' : 'none';
-  document.getElementById('app-screen').style.display = s === 'app' ? 'block' : 'none';
+// ══ SCREEN ══
+function showScreen(s){
+  document.getElementById('loading-screen').style.display='none';
+  document.getElementById('auth-screen').style.display=s==='auth'?'flex':'none';
+  document.getElementById('app-screen').style.display=s==='app'?'block':'none';
 }
 
-// ══════════════════════════════════════════════════
-// AUTH
-// ══════════════════════════════════════════════════
-function switchAuthTab(tab, el) {
-  document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+// ══ AUTH ══
+function switchAuthTab(tab,el){
+  document.querySelectorAll('.auth-tab').forEach(t=>t.classList.remove('active'));
   el.classList.add('active');
-  document.getElementById('form-login').style.display = tab === 'login' ? 'flex' : 'none';
-  document.getElementById('form-register').style.display = tab === 'register' ? 'flex' : 'none';
+  document.getElementById('form-login').style.display=tab==='login'?'flex':'none';
+  document.getElementById('form-register').style.display=tab==='register'?'flex':'none';
 }
-function showErr(el, msg) { el.textContent = msg; el.style.display = 'block'; }
+function showErr(el,msg){el.textContent=msg;el.style.display='block';}
+async function doLogin(){
+  const email=document.getElementById('login-email').value.trim();
+  const pass=document.getElementById('login-password').value;
+  const errEl=document.getElementById('login-error'),btn=document.getElementById('login-btn');
+  errEl.style.display='none';
+  if(!email||!pass){showErr(errEl,'Isi email dan password dulu.');return;}
+  btn.disabled=true;btn.textContent='Memproses...';
+  try{await auth.signInWithEmailAndPassword(email,pass);}
+  catch(e){btn.disabled=false;btn.textContent='Masuk';showErr(errEl,e.code.includes('wrong-password')||e.code.includes('invalid-credential')?'Email atau password salah.':e.message);}
+}
+async function doRegister(){
+  const name=document.getElementById('reg-name').value.trim();
+  const email=document.getElementById('reg-email').value.trim();
+  const pass=document.getElementById('reg-password').value;
+  const errEl=document.getElementById('reg-error'),sucEl=document.getElementById('reg-success'),btn=document.getElementById('reg-btn');
+  errEl.style.display='none';sucEl.style.display='none';
+  if(!name||!email||!pass){showErr(errEl,'Isi semua kolom.');return;}
+  if(pass.length<6){showErr(errEl,'Password minimal 6 karakter.');return;}
+  btn.disabled=true;btn.textContent='Membuat akun...';
+  try{
+    const r=await auth.createUserWithEmailAndPassword(email,pass);
+    await r.user.updateProfile({displayName:name});
+    sucEl.textContent='✓ Akun dibuat! Silakan masuk.';sucEl.style.display='block';
+    btn.disabled=false;btn.textContent='Buat Akun';
+  }catch(e){btn.disabled=false;btn.textContent='Buat Akun';showErr(errEl,e.message);}
+}
+async function doGoogleLogin(){
+  try{await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());}
+  catch(e){console.error(e);}
+}
+async function doLogout(){await auth.signOut();}
 
-async function doLogin() {
-  const email = document.getElementById('login-email').value.trim();
-  const pass = document.getElementById('login-password').value;
-  const errEl = document.getElementById('login-error');
-  const btn = document.getElementById('login-btn');
-  errEl.style.display = 'none';
-  if (!email || !pass) { showErr(errEl, 'Isi email dan password dulu.'); return; }
-  btn.disabled = true; btn.textContent = 'Memproses...';
-  try {
-    await auth.signInWithEmailAndPassword(email, pass);
-  } catch(e) {
-    btn.disabled = false; btn.textContent = 'Masuk';
-    showErr(errEl, e.code === 'auth/invalid-credential' || e.code === 'auth/wrong-password' ? 'Email atau password salah.' : e.message);
-  }
-}
-async function doRegister() {
-  const name = document.getElementById('reg-name').value.trim();
-  const email = document.getElementById('reg-email').value.trim();
-  const pass = document.getElementById('reg-password').value;
-  const errEl = document.getElementById('reg-error');
-  const sucEl = document.getElementById('reg-success');
-  const btn = document.getElementById('reg-btn');
-  errEl.style.display = 'none'; sucEl.style.display = 'none';
-  if (!name || !email || !pass) { showErr(errEl, 'Isi semua kolom.'); return; }
-  if (pass.length < 6) { showErr(errEl, 'Password minimal 6 karakter.'); return; }
-  btn.disabled = true; btn.textContent = 'Membuat akun...';
-  try {
-    const result = await auth.createUserWithEmailAndPassword(email, pass);
-    await result.user.updateProfile({ displayName: name });
-    sucEl.textContent = '✓ Akun dibuat! Silakan masuk.';
-    sucEl.style.display = 'block';
-    btn.disabled = false; btn.textContent = 'Buat Akun';
-  } catch(e) {
-    btn.disabled = false; btn.textContent = 'Buat Akun';
-    showErr(errEl, e.message);
-  }
-}
-async function doGoogleLogin() {
-  try {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    await auth.signInWithPopup(provider);
-  } catch(e) {
-    console.error('Google login error:', e);
-  }
-}
-async function doLogout() {
-  await auth.signOut();
-}
-
-// ══════════════════════════════════════════════════
-// FIRESTORE — LOAD & SAVE
-// ══════════════════════════════════════════════════
-async function loadProgress() {
-  try {
-    const doc = await db.collection('user_progress').doc(currentUser.uid).get();
-    if (doc.exists) {
-      const data = doc.data();
-      learnedH = data.learned_hiragana || [];
-      learnedK = data.learned_katakana || [];
-      learnedD = data.learned_dakuon || [];
-      learnedVocab = data.learned_vocab || {};
-      userProgress = { xp: data.xp || 0, streak: data.streak || 0, quizDone: data.quiz_done || 0 };
-    } else {
-      userProgress = { xp: 0, streak: 0, quizDone: 0 };
+// ══ FIRESTORE ══
+async function loadProgress(){
+  try{
+    const doc=await db.collection('user_progress').doc(currentUser.uid).get();
+    if(doc.exists){
+      const d=doc.data();
+      learnedH=d.learned_hiragana||[];learnedK=d.learned_katakana||[];
+      learnedD=d.learned_dakuon||[];learnedVocab=d.learned_vocab||{};
+      userProgress={xp:d.xp||0,streak:d.streak||0,quizDone:d.quiz_done||0};
+    }else{
+      userProgress={xp:0,streak:0,quizDone:0};
       await db.collection('user_progress').doc(currentUser.uid).set({
-        learned_hiragana: [], learned_katakana: [], learned_dakuon: [],
-        learned_vocab: {}, xp: 0, streak: 0, quiz_done: 0,
-        last_login: firebase.firestore.FieldValue.serverTimestamp()
+        learned_hiragana:[],learned_katakana:[],learned_dakuon:[],learned_vocab:{},
+        xp:0,streak:0,quiz_done:0,last_login:firebase.firestore.FieldValue.serverTimestamp()
       });
     }
-  } catch(err) {
-    console.warn('loadProgress gagal:', err);
-    userProgress = { xp: 0, streak: 0, quizDone: 0 };
-  }
+  }catch(err){console.warn('loadProgress:',err);userProgress={xp:0,streak:0,quizDone:0};}
 }
-async function saveProgress() {
-  if (!currentUser) return;
-  try {
+async function saveProgress(){
+  if(!currentUser)return;
+  try{
+    const name=currentUser.displayName||currentUser.email?.split('@')[0]||'User';
     await db.collection('user_progress').doc(currentUser.uid).set({
-      learned_hiragana: learnedH, learned_katakana: learnedK,
-      learned_dakuon: learnedD, learned_vocab: learnedVocab,
-      xp: userProgress.xp || 0, streak: userProgress.streak || 0,
-      quiz_done: userProgress.quizDone || 0,
-      last_login: firebase.firestore.FieldValue.serverTimestamp()
+      learned_hiragana:learnedH,learned_katakana:learnedK,
+      learned_dakuon:learnedD,learned_vocab:learnedVocab,
+      xp:userProgress.xp||0,streak:userProgress.streak||0,quiz_done:userProgress.quizDone||0,
+      display_name:name,email:currentUser.email,
+      last_login:firebase.firestore.FieldValue.serverTimestamp()
     });
     flashSave();
-  } catch(err) {
-    console.warn('saveProgress gagal:', err);
-  }
+  }catch(err){console.warn('saveProgress:',err);}
 }
-function scheduleSave() { clearTimeout(saveTimer); saveTimer = setTimeout(saveProgress, 1500); }
-function flashSave() {
-  const el = document.getElementById('save-indicator');
-  el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 2000);
-}
+function scheduleSave(){clearTimeout(saveTimer);saveTimer=setTimeout(saveProgress,1500);}
+function flashSave(){const el=document.getElementById('save-indicator');el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2000);}
 
-// ══════════════════════════════════════════════════
-// UI UPDATE
-// ══════════════════════════════════════════════════
-function updateSidebarUser() {
-  const name = currentUser.displayName || currentUser.email.split('@')[0];
-  const initials = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
-  document.getElementById('user-avatar').textContent = initials;
-  document.getElementById('user-name').textContent = name;
-  document.getElementById('user-email').textContent = currentUser.email;
+// ══ UI ══
+function updateSidebarUser(){
+  const name=currentUser.displayName||currentUser.email.split('@')[0];
+  const initials=name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  document.getElementById('user-avatar').textContent=initials;
+  document.getElementById('user-name').textContent=name;
+  document.getElementById('user-email').textContent=currentUser.email;
   updateStats();
 }
-function updateStats() {
-  const xp = userProgress.xp || 0;
-  document.getElementById('xp-val').textContent = xp;
-  document.getElementById('xp-fill').style.width = Math.min(xp / 10, 100) + '%';
-  document.getElementById('streak-val').textContent = userProgress.streak || 0;
-  document.getElementById('stat-quiz').textContent = userProgress.quizDone || 0;
-  const kana = learnedH.length + learnedK.length + learnedD.length;
-  document.getElementById('stat-kana').textContent = kana;
-  const vocabLearned = Object.values(learnedVocab).filter(v => v >= 2).length;
-  document.getElementById('stat-vocab').textContent = vocabLearned;
-  const hp = Math.round(learnedH.length / 46 * 100);
-  const kp = Math.round(learnedK.length / 46 * 100);
-  const dTotal = DAKUON_DATA.dakuon.items.length + DAKUON_DATA.handakuon.items.length + DAKUON_DATA.youon.items.length;
-  const dp = Math.round(learnedD.length / dTotal * 100);
-  const vp = Math.round(vocabLearned / 60 * 100);
-  document.getElementById('mod-h-pct').textContent = hp + '%';
-  document.getElementById('mod-k-pct').textContent = kp + '%';
-  document.getElementById('mod-d-pct').textContent = dp + '%';
-  document.getElementById('mod-v-pct').textContent = vp + '%';
-  document.getElementById('mod-h-bar').style.width = hp + '%';
-  document.getElementById('mod-k-bar').style.width = kp + '%';
-  document.getElementById('mod-d-bar').style.width = dp + '%';
-  document.getElementById('mod-v-bar').style.width = Math.min(vp, 100) + '%';
-  // Update mobile bottom bar
-  const mobXp = document.getElementById('mob-xp-val');
-  const mobStreak = document.getElementById('mob-streak-val');
-  if (mobXp) mobXp.textContent = userProgress.xp || 0;
-  if (mobStreak) mobStreak.textContent = userProgress.streak || 0;
+function updateStats(){
+  const xp=userProgress.xp||0;
+  document.getElementById('xp-val').textContent=xp;
+  document.getElementById('xp-fill').style.width=Math.min(xp/10,100)+'%';
+  document.getElementById('streak-val').textContent=userProgress.streak||0;
+  document.getElementById('stat-quiz').textContent=userProgress.quizDone||0;
+  const kana=learnedH.length+learnedK.length+learnedD.length;
+  document.getElementById('stat-kana').textContent=kana;
+  const vl=Object.values(learnedVocab).filter(v=>v>=2).length;
+  document.getElementById('stat-vocab').textContent=vl;
+  const hp=Math.round(learnedH.length/46*100),kp=Math.round(learnedK.length/46*100);
+  const dT=DAKUON_DATA.dakuon.items.length+DAKUON_DATA.handakuon.items.length+DAKUON_DATA.youon.items.length;
+  const dp=Math.round(learnedD.length/dT*100),vp=Math.round(vl/60*100);
+  document.getElementById('mod-h-pct').textContent=hp+'%';
+  document.getElementById('mod-k-pct').textContent=kp+'%';
+  document.getElementById('mod-d-pct').textContent=dp+'%';
+  document.getElementById('mod-v-pct').textContent=vp+'%';
+  document.getElementById('mod-h-bar').style.width=hp+'%';
+  document.getElementById('mod-k-bar').style.width=kp+'%';
+  document.getElementById('mod-d-bar').style.width=dp+'%';
+  document.getElementById('mod-v-bar').style.width=Math.min(vp,100)+'%';
+  const mxp=document.getElementById('mob-xp-val'),mst=document.getElementById('mob-streak-val');
+  if(mxp)mxp.textContent=userProgress.xp||0;
+  if(mst)mst.textContent=userProgress.streak||0;
 }
 
-// ══════════════════════════════════════════════════
-// NAVIGATION with animation
-// ══════════════════════════════════════════════════
-function nav(pageId, el) {
-  const current = document.querySelector('.page.active');
-  const next = document.getElementById('page-' + pageId);
-  if (current === next) return;
-  current.classList.remove('active');
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+// ══ NAV ══
+function nav(pageId,el){
+  const curr=document.querySelector('.page.active');
+  const next=document.getElementById('page-'+pageId);
+  if(curr===next)return;
+  curr.classList.remove('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   next.classList.add('active');
-  if (el) el.classList.add('active');
-  // Trigger leaderboard load when navigating to it
-  if (pageId === 'leaderboard') loadLeaderboard();
+  if(el)el.classList.add('active');
+  if(pageId==='leaderboard')loadLeaderboard();
 }
 
-// ══════════════════════════════════════════════════
-// KANA GRID
-// ══════════════════════════════════════════════════
-function buildKanaGrid(data, containerId, key, learnedArr) {
-  const c = document.getElementById(containerId);
-  let html = '';
-  data.forEach(rowData => {
-    html += `<div class="kana-row-group"><div class="kana-row-label">${rowData.row}</div>`;
-    rowData.chars.forEach(ch => {
-      if (!ch.jp) { html += `<div></div>`; return; }
-      const learned = learnedArr.includes(ch.jp) ? 'learned' : '';
-      html += `<div class="kana-cell ${learned}" onclick="toggleKana('${ch.jp}','${key}',this)">
+// ══ KANA ══
+function buildKanaGrid(data,containerId,key,learnedArr){
+  const c=document.getElementById(containerId);
+  let html='';
+  data.forEach(r=>{
+    html+=`<div class="kana-row-group"><div class="kana-row-label">${r.row}</div>`;
+    r.chars.forEach(ch=>{
+      if(!ch.jp){html+=`<div></div>`;return;}
+      const learned=learnedArr.includes(ch.jp)?'learned':'';
+      html+=`<div class="kana-cell ${learned}" onclick="toggleKana('${ch.jp}','${key}',this)">
         <div class="kana-jp">${ch.jp}</div><div class="kana-rom">${ch.r}</div></div>`;
     });
-    html += `</div>`;
+    html+=`</div>`;
   });
-  c.innerHTML = html;
+  c.innerHTML=html;
 }
-function toggleKana(char, key, el) {
-  const arr = key === 'H' ? learnedH : learnedK;
-  const idx = arr.indexOf(char);
-  if (idx === -1) {
-    arr.push(char); el.classList.add('learned');
-    userProgress.xp = (userProgress.xp || 0) + 5;
-    el.classList.remove('learned-pop');
-    void el.offsetWidth;
-    el.classList.add('learned-pop');
-  } else {
-    arr.splice(idx, 1); el.classList.remove('learned');
-  }
-  updateStats(); scheduleSave();
+function toggleKana(char,key,el){
+  const arr=key==='H'?learnedH:learnedK;
+  const idx=arr.indexOf(char);
+  if(idx===-1){arr.push(char);el.classList.add('learned');userProgress.xp=(userProgress.xp||0)+5;}
+  else{arr.splice(idx,1);el.classList.remove('learned');}
+  updateStats();scheduleSave();
 }
 
-// ══════════════════════════════════════════════════
-// DAKUON
-// ══════════════════════════════════════════════════
-function buildDakuon() {
-  const c = document.getElementById('dakuon-content');
-  let html = '';
-  for (const key in DAKUON_DATA) {
-    const sec = DAKUON_DATA[key];
-    html += `<div class="daku-section"><div class="daku-title">${sec.title}</div><div class="daku-desc">${sec.desc}</div><div class="daku-grid">`;
-    sec.items.forEach(item => {
-      const learned = learnedD.includes(item.jp) ? 'learned' : '';
-      html += `<div class="daku-cell ${learned}" onclick="toggleDaku('${item.jp}',this)">
+// ══ DAKUON ══
+function buildDakuon(){
+  const c=document.getElementById('dakuon-content');
+  let html='';
+  for(const k in DAKUON_DATA){
+    const s=DAKUON_DATA[k];
+    html+=`<div class="daku-section"><div class="daku-title">${s.title}</div><div class="daku-desc">${s.desc}</div><div class="daku-grid">`;
+    s.items.forEach(item=>{
+      const learned=learnedD.includes(item.jp)?'learned':'';
+      html+=`<div class="daku-cell ${learned}" onclick="toggleDaku('${item.jp}',this)">
         <div class="daku-main jp">${item.jp}</div><div class="daku-sub">${item.r}</div>
         <div class="daku-from">${item.from}</div></div>`;
     });
-    html += `</div></div>`;
+    html+=`</div></div>`;
   }
-  c.innerHTML = html;
+  c.innerHTML=html;
 }
-function toggleDaku(char, el) {
-  const idx = learnedD.indexOf(char);
-  if (idx === -1) { learnedD.push(char); el.classList.add('learned'); userProgress.xp = (userProgress.xp || 0) + 5; }
-  else { learnedD.splice(idx, 1); el.classList.remove('learned'); }
-  updateStats(); scheduleSave();
+function toggleDaku(char,el){
+  const idx=learnedD.indexOf(char);
+  if(idx===-1){learnedD.push(char);el.classList.add('learned');userProgress.xp=(userProgress.xp||0)+5;}
+  else{learnedD.splice(idx,1);el.classList.remove('learned');}
+  updateStats();scheduleSave();
 }
 
-// ══════════════════════════════════════════════════
-// FLASHCARD
-// ══════════════════════════════════════════════════
-function buildFcCats() {
-  const cats = { kerja: 'Kosakata Kerja', sehari: 'Sehari-hari', angka: 'Angka & Waktu', percakapan: 'Percakapan' };
-  document.getElementById('fc-cats').innerHTML = Object.entries(cats).map(([k, v]) =>
-    `<button class="cat-pill ${k === fcCategory ? 'active' : ''}" onclick="setFcCat('${k}',this)">${v}</button>`
+// ══ FLASHCARD ══
+function buildFcCats(){
+  const cats={kerja:'Kosakata Kerja',sehari:'Sehari-hari',angka:'Angka & Waktu',percakapan:'Percakapan'};
+  document.getElementById('fc-cats').innerHTML=Object.entries(cats).map(([k,v])=>
+    `<button class="cat-pill ${k===fcCategory?'active':''}" onclick="setFcCat('${k}',this)">${v}</button>`
   ).join('');
 }
-function setFcCat(cat, el) {
-  fcCategory = cat; fcCards = [...VOCAB[cat]]; fcIndex = 0;
-  document.querySelectorAll('.cat-pill').forEach(b => b.classList.remove('active'));
-  el.classList.add('active'); loadFc();
+function setFcCat(cat,el){
+  fcCategory=cat;fcCards=[...VOCAB[cat]];fcIndex=0;
+  document.querySelectorAll('.cat-pill').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');loadFc();
 }
-function loadFc() {
-  fcFlipped = false;
-  const c = fcCards[fcIndex];
-  const card = document.getElementById('fc-card');
-  card.classList.remove('flipped');
-  document.getElementById('fc-kanji').textContent = c.jp;
-  document.getElementById('fc-kanji-back').textContent = c.jp;
-  document.getElementById('fc-hiragana').textContent = c.h;
-  document.getElementById('fc-katakana').textContent = c.k;
-  document.getElementById('fc-romaji').textContent = c.r;
-  document.getElementById('fc-meaning').textContent = c.id;
-  document.getElementById('fc-ex-jp').textContent = c.ex.jp;
-  document.getElementById('fc-ex-rom').textContent = c.ex.h + ' / ' + c.ex.r;
-  document.getElementById('fc-ex-id').textContent = c.ex.id;
-  document.getElementById('fc-btns').style.display = 'none';
-  const catLabel = {kerja:'Kosakata Kerja',sehari:'Sehari-hari',angka:'Angka',percakapan:'Percakapan'}[fcCategory];
-  document.getElementById('fc-prog').textContent = `Kartu ${fcIndex + 1} dari ${fcCards.length} — ${catLabel}`;
+function loadFc(){
+  fcFlipped=false;
+  const c=fcCards[fcIndex];
+  document.getElementById('fc-card').classList.remove('flipped');
+  document.getElementById('fc-kanji').textContent=c.jp;
+  document.getElementById('fc-kanji-back').textContent=c.jp;
+  document.getElementById('fc-hiragana').textContent=c.h;
+  document.getElementById('fc-katakana').textContent=c.k;
+  document.getElementById('fc-romaji').textContent=c.r;
+  document.getElementById('fc-meaning').textContent=c.id;
+  document.getElementById('fc-ex-jp').textContent=c.ex.jp;
+  document.getElementById('fc-ex-rom').textContent=c.ex.h+' / '+c.ex.r;
+  document.getElementById('fc-ex-id').textContent=c.ex.id;
+  document.getElementById('fc-btns').style.display='none';
+  const catLabel={kerja:'Kosakata Kerja',sehari:'Sehari-hari',angka:'Angka',percakapan:'Percakapan'}[fcCategory];
+  document.getElementById('fc-prog').textContent=`Kartu ${fcIndex+1} dari ${fcCards.length} — ${catLabel}`;
 }
-function flipCard() {
-  if (fcFlipped) return;
-  fcFlipped = true;
+function flipCard(){
+  if(fcFlipped)return;
+  fcFlipped=true;
   document.getElementById('fc-card').classList.add('flipped');
-  document.getElementById('fc-btns').style.display = 'flex';
+  document.getElementById('fc-btns').style.display='flex';
 }
-function answer(score) {
-  const word = fcCards[fcIndex].jp;
-  learnedVocab[word] = Math.max(learnedVocab[word] || 0, score);
-  if (score >= 2) userProgress.xp = (userProgress.xp || 0) + 10;
-  else if (score === 1) userProgress.xp = (userProgress.xp || 0) + 3;
-  updateStats(); scheduleSave();
-  // XP burst visual
-  const xpEl = document.getElementById('xp-val');
-  xpEl.classList.remove('xp-burst');
-  void xpEl.offsetWidth;
-  xpEl.classList.add('xp-burst');
-  // Slide animation to next card
-  const card = document.getElementById('fc-card');
+function answer(score){
+  const word=fcCards[fcIndex].jp;
+  learnedVocab[word]=Math.max(learnedVocab[word]||0,score);
+  if(score>=2)userProgress.xp=(userProgress.xp||0)+10;
+  else if(score===1)userProgress.xp=(userProgress.xp||0)+3;
+  updateStats();scheduleSave();
+  const xpEl=document.getElementById('xp-val');
+  xpEl.classList.remove('xp-burst');void xpEl.offsetWidth;xpEl.classList.add('xp-burst');
+  const card=document.getElementById('fc-card');
   card.classList.add('slide-out');
-  setTimeout(() => {
-    fcIndex = (fcIndex + 1) % fcCards.length;
-    loadFc();
-    card.classList.remove('slide-out');
-    card.classList.add('slide-in');
-    setTimeout(() => card.classList.remove('slide-in'), 350);
-  }, 220);
+  setTimeout(()=>{
+    fcIndex=(fcIndex+1)%fcCards.length;loadFc();
+    card.classList.remove('slide-out');card.classList.add('slide-in');
+    setTimeout(()=>card.classList.remove('slide-in'),350);
+  },220);
 }
 
-// ══════════════════════════════════════════════════
-// GRAMMAR
-// ══════════════════════════════════════════════════
-function buildGrammar() {
-  document.getElementById('grammar-list').innerHTML = GRAMMAR.map(g => `
+// ══ GRAMMAR ══
+function buildGrammar(){
+  document.getElementById('grammar-list').innerHTML=GRAMMAR.map(g=>`
     <div class="grammar-item">
       <div class="grammar-pattern">${g.pattern}</div>
       <div class="grammar-label">Nama pola</div>
@@ -1551,7 +1480,7 @@ function buildGrammar() {
       <div class="grammar-label">Penjelasan</div>
       <div class="grammar-desc">${g.desc}</div>
       <div class="grammar-label" style="margin-top:10px">Contoh kalimat</div>
-      ${g.contoh.map(c => `<div class="grammar-example">
+      ${g.contoh.map(c=>`<div class="grammar-example">
         <div class="grammar-ex-jp">${c.jp}</div>
         <div class="grammar-ex-kana">${c.kana}</div>
         <div class="grammar-ex-rom">${c.r}</div>
@@ -1560,47 +1489,40 @@ function buildGrammar() {
     </div>`).join('');
 }
 
-// ══════════════════════════════════════════════════
-// QUIZ
-// ══════════════════════════════════════════════════
-function startQuiz() {
-  quizQuestions = [...QUIZ_DATA].sort(() => Math.random() - .5).slice(0, 10);
-  quizIndex = 0; quizScore = 0; showQuestion();
+// ══ QUIZ ══
+function startQuiz(){
+  quizQuestions=[...QUIZ_DATA].sort(()=>Math.random()-.5).slice(0,10);
+  quizIndex=0;quizScore=0;showQuestion();
 }
-function showQuestion() {
-  const q = quizQuestions[quizIndex];
-  quizAnswered = false;
-  document.getElementById('quiz-area').innerHTML = `
+function showQuestion(){
+  const q=quizQuestions[quizIndex];
+  quizAnswered=false;
+  document.getElementById('quiz-area').innerHTML=`
     <div class="card">
       <div style="font-size:12px;color:var(--muted);margin-bottom:12px">Soal ${quizIndex+1} dari ${quizQuestions.length} | Skor: ${quizScore}</div>
       <div style="font-size:15px;font-weight:700;margin-bottom:4px">${q.q}</div>
       <div class="quiz-jp-big">${q.jp}</div>
       <div class="quiz-furigana">${q.h}</div>
-      <div class="quiz-options">${q.opts.map((o,i) => `<button class="quiz-opt" onclick="answerQuiz(${i})">${o}</button>`).join('')}</div>
+      <div class="quiz-options">${q.opts.map((o,i)=>`<button class="quiz-opt" onclick="answerQuiz(${i})">${o}</button>`).join('')}</div>
     </div>`;
 }
-function answerQuiz(chosen) {
-  if (quizAnswered) return;
-  quizAnswered = true;
-  const q = quizQuestions[quizIndex];
-  const opts = document.querySelectorAll('.quiz-opt');
-  opts[q.ans].classList.add('correct');
-  if (chosen !== q.ans) {
-    opts[chosen].classList.add('wrong');
-    opts[chosen].classList.add('shake-wrong');
-  } else {
-    opts[chosen].classList.add('pop-correct');
-    quizScore++;
-  }
-  setTimeout(() => { quizIndex++; quizIndex >= quizQuestions.length ? showResult() : showQuestion(); }, 1000);
+function answerQuiz(chosen){
+  if(quizAnswered)return;
+  quizAnswered=true;
+  const q=quizQuestions[quizIndex];
+  const opts=document.querySelectorAll('.quiz-opt');
+  opts[q.ans].classList.add('correct','pop-correct');
+  if(chosen!==q.ans){opts[chosen].classList.add('wrong','shake-wrong');}
+  else quizScore++;
+  setTimeout(()=>{quizIndex++;quizIndex>=quizQuestions.length?showResult():showQuestion();},1000);
 }
-function showResult() {
-  const pct = Math.round(quizScore / quizQuestions.length * 100);
-  const msg = pct >= 80 ? 'Luar biasa! 🎉' : pct >= 60 ? 'Bagus! Terus semangat 💪' : 'Ayo belajar lebih giat 📚';
-  userProgress.xp = (userProgress.xp || 0) + quizScore * 10;
-  userProgress.quizDone = (userProgress.quizDone || 0) + 1;
-  updateStats(); saveProgress();
-  document.getElementById('quiz-area').innerHTML = `
+function showResult(){
+  const pct=Math.round(quizScore/quizQuestions.length*100);
+  const msg=pct>=80?'Luar biasa! 🎉':pct>=60?'Bagus! Terus semangat 💪':'Ayo belajar lebih giat 📚';
+  userProgress.xp=(userProgress.xp||0)+quizScore*10;
+  userProgress.quizDone=(userProgress.quizDone||0)+1;
+  updateStats();saveProgress();
+  document.getElementById('quiz-area').innerHTML=`
     <div class="card" style="text-align:center;padding:30px">
       <div class="quiz-score-big">${quizScore}/${quizQuestions.length}</div>
       <div class="quiz-meta">${pct}% benar — ${msg}</div>
@@ -1609,29 +1531,26 @@ function showResult() {
     </div>`;
 }
 
-// ══════════════════════════════════════════════════
-// KAMUS KANJI
-// ══════════════════════════════════════════════════
-function buildKamusCats() {
-  const cats = ['semua','waktu','orang','aksi','sifat','tempat','keluarga','alam','pendidikan','warna','makanan','kerja'];
-  document.getElementById('kanji-filter').innerHTML = cats.map(c =>
-    `<button class="kf-btn ${c === kanjiFilter ? 'active' : ''}" onclick="setKanjiFilter('${c}',this)">${c}</button>`
+// ══ KAMUS ══
+function buildKamusCats(){
+  const cats=['semua','waktu','orang','aksi','sifat','tempat','keluarga','alam','pendidikan','warna','makanan','kerja'];
+  document.getElementById('kanji-filter').innerHTML=cats.map(c=>
+    `<button class="kf-btn ${c===kanjiFilter?'active':''}" onclick="setKanjiFilter('${c}',this)">${c}</button>`
   ).join('');
 }
-function setKanjiFilter(cat, el) {
-  kanjiFilter = cat;
-  document.querySelectorAll('.kf-btn').forEach(b => b.classList.remove('active'));
-  el.classList.add('active'); renderKanji();
+function setKanjiFilter(cat,el){
+  kanjiFilter=cat;
+  document.querySelectorAll('.kf-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');renderKanji();
 }
-function filterKanji() { kanjiSearch = document.getElementById('kanji-search').value.toLowerCase(); renderKanji(); }
-function renderKanji() {
-  let filtered = KANJI_LIST;
-  if (kanjiFilter !== 'semua') filtered = filtered.filter(k => k.cat === kanjiFilter);
-  if (kanjiSearch) filtered = filtered.filter(k =>
-    k.k.includes(kanjiSearch) || k.m.toLowerCase().includes(kanjiSearch) ||
-    k.on.toLowerCase().includes(kanjiSearch) || k.kun.toLowerCase().includes(kanjiSearch)
-  );
-  document.getElementById('kanji-grid').innerHTML = filtered.map(k => `
+function filterKanji(){kanjiSearch=document.getElementById('kanji-search').value.toLowerCase();renderKanji();}
+function renderKanji(){
+  let filtered=KANJI_LIST;
+  if(kanjiFilter!=='semua')filtered=filtered.filter(k=>k.cat===kanjiFilter);
+  if(kanjiSearch)filtered=filtered.filter(k=>
+    k.k.includes(kanjiSearch)||k.m.toLowerCase().includes(kanjiSearch)||
+    k.on.toLowerCase().includes(kanjiSearch)||k.kun.toLowerCase().includes(kanjiSearch));
+  document.getElementById('kanji-grid').innerHTML=filtered.map(k=>`
     <div class="kanji-card" onclick="openKanjiModal(${KANJI_LIST.indexOf(k)})">
       <div class="kanji-char">${k.k}</div>
       <div class="kanji-info">
@@ -1644,14 +1563,14 @@ function renderKanji() {
       </div>
     </div>`).join('');
 }
-function openKanjiModal(idx) {
-  const k = KANJI_LIST[idx];
-  document.getElementById('modal-char').textContent = k.k;
-  document.getElementById('modal-meaning').textContent = k.m;
-  document.getElementById('modal-on').textContent = k.on;
-  document.getElementById('modal-kun').textContent = k.kun;
-  document.getElementById('modal-stroke').textContent = k.s + ' coretan';
-  document.getElementById('modal-examples').innerHTML = k.ex.map(e => `
+function openKanjiModal(idx){
+  const k=KANJI_LIST[idx];
+  document.getElementById('modal-char').textContent=k.k;
+  document.getElementById('modal-meaning').textContent=k.m;
+  document.getElementById('modal-on').textContent=k.on;
+  document.getElementById('modal-kun').textContent=k.kun;
+  document.getElementById('modal-stroke').textContent=k.s+' coretan';
+  document.getElementById('modal-examples').innerHTML=k.ex.map(e=>`
     <div class="grammar-example" style="margin-top:8px">
       <div class="grammar-ex-jp">${e.w}</div>
       <div class="grammar-ex-kana" style="font-size:13px;color:var(--accent)">${e.r}</div>
@@ -1659,166 +1578,132 @@ function openKanjiModal(idx) {
     </div>`).join('');
   document.getElementById('kanji-modal').classList.add('show');
 }
-function closeModal(e) {
-  if (e.target === document.getElementById('kanji-modal'))
-    document.getElementById('kanji-modal').classList.remove('show');
-}
+function closeModal(e){if(e.target===document.getElementById('kanji-modal'))document.getElementById('kanji-modal').classList.remove('show');}
 
-// ══════════════════════════════════════════════════
-// INIT APP
-// ══════════════════════════════════════════════════
-async function initApp(user) {
-  currentUser = user;
-  try {
-    await loadProgress();
-    updateSidebarUser();
-    buildKanaGrid(HIRAGANA, 'hiragana-grid', 'H', learnedH);
-    buildKanaGrid(KATAKANA, 'katakana-grid', 'K', learnedK);
-    buildDakuon();
-    fcCards = [...VOCAB[fcCategory]];
-    buildFcCats(); loadFc();
-    buildGrammar();
-    startQuiz();
-    buildKamusCats(); renderKanji();
-    showScreen('app');
-  } catch(err) {
-    console.error('initApp error:', err);
-    learnedH = []; learnedK = []; learnedD = []; learnedVocab = {};
-    userProgress = { xp: 0, streak: 0, quizDone: 0 };
-    updateSidebarUser();
-    buildKanaGrid(HIRAGANA, 'hiragana-grid', 'H', learnedH);
-    buildKanaGrid(KATAKANA, 'katakana-grid', 'K', learnedK);
-    buildDakuon();
-    fcCards = [...VOCAB[fcCategory]];
-    buildFcCats(); loadFc();
-    buildGrammar();
-    startQuiz();
-    buildKamusCats(); renderKanji();
-    showScreen('app');
-  }
-}
-
-// ══════════════════════════════════════════════════
-// FIREBASE AUTH LISTENER — Tidak ada blank saat refresh!
-// onAuthStateChanged Firebase selalu dipanggil saat load,
-// baik user sudah login maupun belum.
-// ══════════════════════════════════════════════════
-auth.onAuthStateChanged(async (user) => {
-  if (user) {
-    await initApp(user);
-  } else {
-    showScreen('auth');
-  }
-});
-
-// ══════════════════════════════════════════════════
-// LEADERBOARD
-// ══════════════════════════════════════════════════
-async function loadLeaderboard() {
-  const el = document.getElementById('lb-list');
-  el.innerHTML = '<div class="lb-loading">⏳ Memuat leaderboard...</div>';
-  try {
-    const snap = await db.collection('user_progress')
-      .orderBy('xp', 'desc')
-      .limit(20)
-      .get();
-    if (snap.empty) {
-      el.innerHTML = '<div class="lb-empty">Belum ada data. Jadilah yang pertama! 🚀</div>';
-      return;
-    }
-    const medals = ['🥇','🥈','🥉'];
-    const rankClass = ['gold','silver','bronze'];
-    el.innerHTML = snap.docs.map((doc, i) => {
-      const d = doc.data();
-      const name = d.display_name || d.email?.split('@')[0] || 'User';
-      const initials = name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
-      const isMe = currentUser && doc.id === currentUser.uid;
-      const rank = i < 3 ? medals[i] : `#${i+1}`;
-      const rankCls = i < 3 ? rankClass[i] : 'other';
-      const quizDone = d.quiz_done || 0;
+// ══ LEADERBOARD ══
+async function loadLeaderboard(){
+  const el=document.getElementById('lb-list');
+  el.innerHTML='<div class="lb-loading">⏳ Memuat leaderboard...</div>';
+  try{
+    const snap=await db.collection('user_progress').orderBy('xp','desc').limit(20).get();
+    if(snap.empty){el.innerHTML='<div class="lb-empty">Belum ada data. Jadilah yang pertama! 🚀</div>';return;}
+    const medals=['🥇','🥈','🥉'],rankClass=['gold','silver','bronze'];
+    el.innerHTML=snap.docs.map((doc,i)=>{
+      const d=doc.data();
+      const name=d.display_name||d.email?.split('@')[0]||'User';
+      const initials=name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+      const isMe=currentUser&&doc.id===currentUser.uid;
+      const rank=i<3?medals[i]:`#${i+1}`;
+      const rankCls=i<3?rankClass[i]:'other';
       return `<div class="lb-item ${isMe?'me':''}" style="animation-delay:${i*0.06}s">
         <div class="lb-rank ${rankCls}">${rank}</div>
         <div class="lb-avatar">${initials}</div>
         <div class="lb-info">
           <div class="lb-name">${name}${isMe?' <span style="color:var(--accent2);font-size:10px">(Kamu)</span>':''}</div>
-          <div class="lb-sub">Quiz: ${quizDone} selesai</div>
+          <div class="lb-sub">Quiz: ${d.quiz_done||0} selesai</div>
         </div>
         <div class="lb-xp">${(d.xp||0).toLocaleString()} XP</div>
       </div>`;
     }).join('');
-  } catch(err) {
-    console.error('Leaderboard error:', err);
-    el.innerHTML = '<div class="lb-empty">Gagal memuat. Pastikan Firestore Rules mengizinkan read.<br><small style="color:var(--muted)">Firestore → Rules → allow read: if true;</small></div>';
+  }catch(err){
+    el.innerHTML='<div class="lb-empty">Gagal memuat. Pastikan Firestore Rules: allow read: if true;</div>';
   }
 }
 
-// Update saveProgress to also save display_name and email for leaderboard
-async function saveProgressWithName() {
-  if (!currentUser) return;
-  try {
-    const name = currentUser.displayName || currentUser.email?.split('@')[0] || 'User';
-    await db.collection('user_progress').doc(currentUser.uid).set({
-      learned_hiragana: learnedH, learned_katakana: learnedK,
-      learned_dakuon: learnedD, learned_vocab: learnedVocab,
-      xp: userProgress.xp || 0, streak: userProgress.streak || 0,
-      quiz_done: userProgress.quizDone || 0,
-      display_name: name,
-      email: currentUser.email,
-      last_login: firebase.firestore.FieldValue.serverTimestamp()
+// ══ THEME TRANSITION — FREEZE / SWAP / UNFREEZE ══
+//
+// Step 1: Overlay fades IN  (0.38s)  — screen covered, neutral mid-grey
+// Step 2: At peak opacity   (0ms)    — add .no-transition, kills all CSS transitions
+//                                       swap data-theme instantly, zero flicker possible
+//                                       remove .no-transition after one frame so future
+//                                       hover transitions work normally again
+// Step 3: Overlay fades OUT (0.38s)  — reveals new theme, crisp and immediate
+// Total: ~0.76s, smooth, zero blink, works identically on mobile
+
+function toggleTheme(){
+  if(themeToggleLocked)return;
+  themeToggleLocked=true;
+
+  const html=document.documentElement;
+  const current=html.getAttribute('data-theme')||'dark';
+  const next=current==='dark'?'light':'dark';
+  const wipe=document.getElementById('theme-wipe');
+  const thumb=document.getElementById('theme-thumb');
+
+  // STEP 1 — fade overlay IN
+  wipe.classList.add('visible');
+
+  setTimeout(()=>{
+    // STEP 2 — freeze all transitions, swap theme, unfreeze next frame
+    html.classList.add('no-transition');
+    html.setAttribute('data-theme', next);
+    thumb.textContent = next==='dark' ? '🌙' : '☀️';
+    localStorage.setItem('nihongo_theme', next);
+
+    // One rAF ensures the browser applies the new data-theme before
+    // we remove no-transition, so there's no in-between paint
+    requestAnimationFrame(()=>{
+      requestAnimationFrame(()=>{
+        html.classList.remove('no-transition');
+
+        // STEP 3 — fade overlay OUT
+        wipe.classList.remove('visible');
+        setTimeout(()=>{ themeToggleLocked=false; }, 420);
+      });
     });
-    flashSave();
-  } catch(err) { console.warn('saveProgress gagal:', err); }
+  }, 400); // wait for overlay to fully cover (38s + a tiny buffer)
 }
 
-// ══════════════════════════════════════════════════
-// DARK / LIGHT MODE
-// ══════════════════════════════════════════════════
-function initTheme() {
-  const saved = localStorage.getItem('nihongo_theme') || 'dark';
-  document.documentElement.setAttribute('data-theme', saved);
-  const thumb = document.getElementById('theme-thumb');
-  if (thumb) thumb.textContent = saved === 'dark' ? '🌙' : '☀️';
-  generateStars();
-}
-
-function generateStars() {
-  const layer = document.getElementById('stars-layer');
-  if (!layer) return;
-  layer.innerHTML = '';
-  const count = window.innerWidth < 640 ? 70 : 130;
-  for (let i = 0; i < count; i++) {
-    const s = document.createElement('div');
-    s.className = 'star';
-    const size = Math.random() * 2.8 + 0.4;
-    s.style.cssText = `width:${size}px;height:${size}px;top:${Math.random()*100}%;left:${Math.random()*100}%;animation-duration:${1.5+Math.random()*5}s;animation-delay:${Math.random()*6}s;opacity:${0.1+Math.random()*0.8}`;
+// ══ STARS ══
+function generateStars(){
+  const layer=document.getElementById('stars-layer');
+  if(!layer)return;
+  layer.innerHTML='';
+  const count=window.innerWidth<640?70:130;
+  for(let i=0;i<count;i++){
+    const s=document.createElement('div');
+    s.className='star';
+    const size=Math.random()*2.8+0.4;
+    s.style.cssText=`width:${size}px;height:${size}px;top:${Math.random()*100}%;left:${Math.random()*100}%;animation-duration:${1.5+Math.random()*5}s;animation-delay:${Math.random()*6}s;opacity:${0.1+Math.random()*0.8}`;
     layer.appendChild(s);
   }
 }
 
-function toggleTheme() {
-  if (themeToggleLocked) return;
-  themeToggleLocked = true;
-
-  const html  = document.documentElement;
-  const current = html.getAttribute('data-theme') || 'dark';
-  const next    = current === 'dark' ? 'light' : 'dark';
-  const thumb   = document.getElementById('theme-thumb');
-
-  // Flip theme — CSS transitions on every element handle the smooth dissolve
-  html.setAttribute('data-theme', next);
-  thumb.textContent = next === 'dark' ? '🌙' : '☀️';
-  localStorage.setItem('nihongo_theme', next);
-
-  // Unlock after transitions settle (longest transition is 1.8s)
-  setTimeout(() => { themeToggleLocked = false; }, 1900);
+// ══ INIT ══
+async function initApp(user){
+  currentUser=user;
+  try{
+    await loadProgress();
+    updateSidebarUser();
+    buildKanaGrid(HIRAGANA,'hiragana-grid','H',learnedH);
+    buildKanaGrid(KATAKANA,'katakana-grid','K',learnedK);
+    buildDakuon();
+    fcCards=[...VOCAB[fcCategory]];
+    buildFcCats();loadFc();buildGrammar();startQuiz();buildKamusCats();renderKanji();
+    showScreen('app');
+  }catch(err){
+    console.error('initApp:',err);
+    userProgress={xp:0,streak:0,quizDone:0};
+    updateSidebarUser();
+    buildKanaGrid(HIRAGANA,'hiragana-grid','H',learnedH);
+    buildKanaGrid(KATAKANA,'katakana-grid','K',learnedK);
+    buildDakuon();fcCards=[...VOCAB[fcCategory]];
+    buildFcCats();loadFc();buildGrammar();startQuiz();buildKamusCats();renderKanji();
+    showScreen('app');
+  }
 }
 
-// ══ INIT — apply saved theme immediately on page load ══
-(function() {
-  const saved = localStorage.getItem('nihongo_theme') || 'dark';
-  document.documentElement.setAttribute('data-theme', saved);
-  const thumb = document.getElementById('theme-thumb');
-  if (thumb) thumb.textContent = saved === 'dark' ? '🌙' : '☀️';
+auth.onAuthStateChanged(async(user)=>{
+  if(user)await initApp(user);
+  else showScreen('auth');
+});
+
+// Init: apply saved theme + generate stars
+(function(){
+  const saved=localStorage.getItem('nihongo_theme')||'dark';
+  document.documentElement.setAttribute('data-theme',saved);
+  const thumb=document.getElementById('theme-thumb');
+  if(thumb)thumb.textContent=saved==='dark'?'🌙':'☀️';
   generateStars();
 })();
 </script>
