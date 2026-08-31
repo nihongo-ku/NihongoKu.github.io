@@ -164,6 +164,25 @@ html[data-theme="dark"]  .theme-toggle-thumb { transform:translateX(0);backgroun
 html[data-theme="light"] .theme-toggle-thumb { transform:translateX(22px);background:#fef08a; }
 
 /* ══════════════════════════════════════════
+   LANGUAGE TOGGLE
+══════════════════════════════════════════ */
+.lang-toggle{position:fixed;top:14px;right:74px;z-index:999;display:flex;background:var(--card);border:1px solid var(--border);border-radius:20px;padding:3px;gap:2px;box-shadow:0 2px 16px rgba(0,0,0,0.15)}
+.lang-btn{border:none;background:transparent;color:var(--muted);font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;padding:6px 10px;border-radius:16px;cursor:pointer;transition:all .2s ease}
+.lang-btn.active{background:var(--accent);color:#fff}
+.lang-btn:not(.active):hover{color:var(--text)}
+@media(max-width:640px){
+  .lang-toggle{top:10px;right:54px;padding:2px}
+  .lang-btn{font-size:10px;padding:5px 8px}
+}
+@media(max-width:400px){
+  .lang-toggle{right:50px}
+  .lang-btn{padding:5px 6px}
+}
+.lang-jp-only,.lang-en-only{ }
+html[data-lang="en"] .lang-jp-only{display:none !important}
+html[data-lang="jp"] .lang-en-only{display:none !important}
+
+/* ══════════════════════════════════════════
    AUTH
 ══════════════════════════════════════════ */
 #auth-screen{display:none;align-items:center;justify-content:center;min-height:100vh;padding:20px}
@@ -677,6 +696,11 @@ html[data-theme="light"] .sidebar { box-shadow:2px 0 16px rgba(0,0,100,.08); }
   <div class="theme-toggle-thumb" id="theme-thumb">🌙</div>
 </button>
 
+<div class="lang-toggle" id="lang-toggle">
+  <button class="lang-btn active" id="lang-btn-jp" onclick="setLanguage('jp')" title="Belajar Bahasa Jepang">🇯🇵 JP</button>
+  <button class="lang-btn" id="lang-btn-en" onclick="setLanguage('en')" title="Belajar Bahasa Inggris">🇬🇧 EN</button>
+</div>
+
 <!-- LOADING -->
 <div id="loading-screen">
   <div class="spinner"></div>
@@ -731,14 +755,15 @@ html[data-theme="light"] .sidebar { box-shadow:2px 0 16px rgba(0,0,100,.08); }
       </div>
       <div class="nav-section">Menu Utama</div>
       <div class="nav-item active" onclick="nav('dashboard',this)"><span class="nav-icon">⊞</span><span>Dashboard</span></div>
-      <div class="nav-item" onclick="nav('hiragana',this)"><span class="nav-icon">あ</span><span>Hiragana</span></div>
-      <div class="nav-item" onclick="nav('katakana',this)"><span class="nav-icon">ア</span><span>Katakana</span></div>
-      <div class="nav-item" onclick="nav('dakuon',this)"><span class="nav-icon">が</span><span>Dakuon & Youon</span></div>
+      <div class="nav-item lang-jp-only" onclick="nav('hiragana',this)"><span class="nav-icon">あ</span><span>Hiragana</span></div>
+      <div class="nav-item lang-jp-only" onclick="nav('katakana',this)"><span class="nav-icon">ア</span><span>Katakana</span></div>
+      <div class="nav-item lang-jp-only" onclick="nav('dakuon',this)"><span class="nav-icon">が</span><span>Dakuon & Youon</span></div>
       <div class="nav-section">Belajar</div>
       <div class="nav-item" onclick="nav('flashcard',this)"><span class="nav-icon">◈</span><span>Flashcard</span></div>
       <div class="nav-item" onclick="nav('grammar',this)"><span class="nav-icon">≡</span><span>Grammar</span></div>
       <div class="nav-item" onclick="nav('quiz',this)"><span class="nav-icon">✎</span><span>Quiz Harian</span></div>
-      <div class="nav-item" onclick="nav('kamus',this)"><span class="nav-icon">漢</span><span>Kamus Kanji</span></div>
+      <div class="nav-item lang-jp-only" onclick="nav('kamus',this)"><span class="nav-icon">漢</span><span>Kamus Kanji</span></div>
+      <div class="nav-item lang-en-only" onclick="nav('kamus_en',this)"><span class="nav-icon">Aa</span><span>Kamus Kata</span></div>
       <div class="nav-item" onclick="nav('leaderboard',this)"><span class="nav-icon">🏆</span><span>Leaderboard</span></div>
 
       <!-- Desktop user block (full sidebar) -->
@@ -777,44 +802,85 @@ html[data-theme="light"] .sidebar { box-shadow:2px 0 16px rgba(0,0,100,.08); }
           <div class="stat-box"><div class="stat-num" style="color:var(--teal)" id="stat-kana">0</div><div class="stat-lbl">Kana dihafalkan</div></div>
           <div class="stat-box"><div class="stat-num" style="color:var(--pink)" id="stat-quiz">0</div><div class="stat-lbl">Quiz selesai</div></div>
         </div>
-        <div class="card">
+        <div class="card lang-jp-only">
           <div class="card-label">Progress Modul N5</div>
           <div class="mod-grid">
-            <div class="mod-item" onclick="nav('hiragana',document.querySelectorAll('.nav-item')[1])">
+            <div class="mod-item" onclick="nav('hiragana',document.querySelector('.nav-item.lang-jp-only'))">
               <div class="mod-head"><span class="mod-name">Hiragana</span><span class="mod-pct" id="mod-h-pct">0%</span></div>
               <div class="prog-bar"><div class="prog-fill" id="mod-h-bar" style="width:0%;background:var(--green)"></div></div>
             </div>
-            <div class="mod-item" onclick="nav('katakana',document.querySelectorAll('.nav-item')[2])">
+            <div class="mod-item" onclick="nav('katakana',null)">
               <div class="mod-head"><span class="mod-name">Katakana</span><span class="mod-pct" id="mod-k-pct">0%</span></div>
               <div class="prog-bar"><div class="prog-fill" id="mod-k-bar" style="width:0%;background:var(--teal)"></div></div>
             </div>
-            <div class="mod-item" onclick="nav('dakuon',document.querySelectorAll('.nav-item')[3])">
+            <div class="mod-item" onclick="nav('dakuon',null)">
               <div class="mod-head"><span class="mod-name">Dakuon & Youon</span><span class="mod-pct" id="mod-d-pct">0%</span></div>
               <div class="prog-bar"><div class="prog-fill" id="mod-d-bar" style="width:0%;background:var(--yellow)"></div></div>
             </div>
-            <div class="mod-item" onclick="nav('flashcard',document.querySelectorAll('.nav-item')[5])">
+            <div class="mod-item" onclick="nav('flashcard',null)">
               <div class="mod-head"><span class="mod-name">Kosakata</span><span class="mod-pct" id="mod-v-pct">0%</span></div>
               <div class="prog-bar"><div class="prog-fill" id="mod-v-bar" style="width:0%;background:var(--accent)"></div></div>
             </div>
           </div>
         </div>
-        <div class="card" style="margin-top:14px">
+        <div class="card lang-en-only">
+          <div class="card-label">Progress Belajar Inggris</div>
+          <div class="mod-grid">
+            <div class="mod-item" onclick="nav('flashcard',null)">
+              <div class="mod-head"><span class="mod-name">Kosakata Dasar</span><span class="mod-pct" id="mod-en-dasar-pct">0%</span></div>
+              <div class="prog-bar"><div class="prog-fill" id="mod-en-dasar-bar" style="width:0%;background:var(--green)"></div></div>
+            </div>
+            <div class="mod-item" onclick="nav('flashcard',null)">
+              <div class="mod-head"><span class="mod-name">Kosakata Menengah</span><span class="mod-pct" id="mod-en-menengah-pct">0%</span></div>
+              <div class="prog-bar"><div class="prog-fill" id="mod-en-menengah-bar" style="width:0%;background:var(--teal)"></div></div>
+            </div>
+            <div class="mod-item" onclick="nav('grammar',null)">
+              <div class="mod-head"><span class="mod-name">Grammar</span><span class="mod-pct" id="mod-en-grammar-pct">0%</span></div>
+              <div class="prog-bar"><div class="prog-fill" id="mod-en-grammar-bar" style="width:0%;background:var(--yellow)"></div></div>
+            </div>
+            <div class="mod-item" onclick="nav('quiz',null)">
+              <div class="mod-head"><span class="mod-name">Quiz</span><span class="mod-pct" id="mod-en-quiz-pct">0%</span></div>
+              <div class="prog-bar"><div class="prog-fill" id="mod-en-quiz-bar" style="width:0%;background:var(--accent)"></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="card lang-jp-only" style="margin-top:14px">
           <div class="card-label">Pelajaran Hari Ini</div>
           <div class="today-grid">
-            <div class="today-card" onclick="nav('flashcard',document.querySelectorAll('.nav-item')[5])">
+            <div class="today-card" onclick="nav('flashcard',null)">
               <span class="today-tag tag-new">Baru</span>
               <div class="today-jp jp">会社<small style="font-size:12px;display:block;color:var(--accent)">かいしゃ</small></div>
               <div class="today-rom">kaisha</div><div class="today-id">Perusahaan</div>
             </div>
-            <div class="today-card" onclick="nav('kamus',document.querySelectorAll('.nav-item')[7])">
+            <div class="today-card" onclick="nav('kamus',null)">
               <span class="today-tag tag-review">Kanji</span>
               <div class="today-jp jp">日<small style="font-size:12px;display:block;color:var(--accent)">にち・ひ</small></div>
               <div class="today-rom">nichi / hi</div><div class="today-id">Matahari / Hari</div>
             </div>
-            <div class="today-card" onclick="nav('quiz',document.querySelectorAll('.nav-item')[6])">
+            <div class="today-card" onclick="nav('quiz',null)">
               <span class="today-tag tag-quiz">Quiz</span>
               <div class="today-jp" style="font-size:18px;margin-top:4px;font-weight:700">Quiz N5</div>
               <div class="today-rom">10 soal</div><div class="today-id">Vocab + Kanji</div>
+            </div>
+          </div>
+        </div>
+        <div class="card lang-en-only" style="margin-top:14px">
+          <div class="card-label">Pelajaran Hari Ini</div>
+          <div class="today-grid">
+            <div class="today-card" onclick="nav('flashcard',null)">
+              <span class="today-tag tag-new">Baru</span>
+              <div class="today-jp" style="font-size:22px;font-weight:700">schedule<small style="font-size:12px;display:block;color:var(--accent)">/ˈskedʒuːl/</small></div>
+              <div class="today-rom">kata benda</div><div class="today-id">Jadwal</div>
+            </div>
+            <div class="today-card" onclick="nav('grammar',null)">
+              <span class="today-tag tag-review">Grammar</span>
+              <div class="today-jp" style="font-size:18px;margin-top:4px;font-weight:700">Present Continuous</div>
+              <div class="today-rom">is/am/are + V-ing</div><div class="today-id">Sedang melakukan</div>
+            </div>
+            <div class="today-card" onclick="nav('quiz',null)">
+              <span class="today-tag tag-quiz">Quiz</span>
+              <div class="today-jp" style="font-size:18px;margin-top:4px;font-weight:700">Quiz Inggris</div>
+              <div class="today-rom">10 soal</div><div class="today-id">Vocab + Grammar</div>
             </div>
           </div>
         </div>
