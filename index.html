@@ -714,7 +714,7 @@ html[data-theme="light"] .sidebar { box-shadow:2px 0 16px rgba(0,0,100,.08); }
 <div id="auth-screen">
   <div class="auth-box">
     <div class="auth-logo">日本語</div>
-    <div class="auth-subtitle">Belajar bahasa Jepang untuk kerja di Jepang</div>
+    <div class="auth-subtitle">Belajar bahasa Jepang &amp; Inggris, gratis dan menyenangkan</div>
     <div class="auth-tabs">
       <button class="auth-tab active" onclick="switchAuthTab('login',this)">Masuk</button>
       <button class="auth-tab" onclick="switchAuthTab('register',this)">Daftar</button>
@@ -753,8 +753,8 @@ html[data-theme="light"] .sidebar { box-shadow:2px 0 16px rgba(0,0,100,.08); }
     <!-- SIDEBAR -->
     <nav class="sidebar">
       <div class="logo">
-        <div class="logo-jp">日本語</div>
-        <div class="logo-en">NIHONGO BELAJAR</div>
+        <div class="logo-jp" id="logo-main-text">日本語</div>
+        <div class="logo-en" id="logo-sub-text">NIHONGO BELAJAR</div>
       </div>
       <div class="nav-section">Menu Utama</div>
       <div class="nav-item active" id="nav-dashboard" onclick="nav('dashboard',this)"><span class="nav-icon">⊞</span><span>Dashboard</span></div>
@@ -798,7 +798,7 @@ html[data-theme="light"] .sidebar { box-shadow:2px 0 16px rgba(0,0,100,.08); }
 
       <!-- DASHBOARD -->
       <div class="page active" id="page-dashboard">
-        <div class="page-title">Dashboard <span>N5</span></div>
+        <div class="page-title">Dashboard <span id="dashboard-badge">N5</span></div>
         <div class="page-sub">Progress belajarmu tersimpan otomatis ke akun</div>
         <div class="stat-grid">
           <div class="stat-box"><div class="stat-num" style="color:var(--accent)" id="stat-vocab">0</div><div class="stat-lbl">Kosakata dikuasai</div></div>
@@ -917,7 +917,7 @@ html[data-theme="light"] .sidebar { box-shadow:2px 0 16px rgba(0,0,100,.08); }
             <div class="fc-card" id="fc-card" onclick="flipCard()">
               <div class="fc-card-front">
                 <div class="fc-kanji jp" id="fc-kanji">会社</div>
-                <div class="fc-hint" id="fc-hint">Ketuk untuk lihat bacaan & arti ↓</div>
+                <div class="fc-hint" id="fc-hint">Ketuk untuk lihat bacaan &amp; arti ↓</div>
               </div>
               <div class="fc-card-back">
                 <div class="fc-kanji jp" id="fc-kanji-back" style="font-size:42px"></div>
@@ -938,19 +938,19 @@ html[data-theme="light"] .sidebar { box-shadow:2px 0 16px rgba(0,0,100,.08); }
             <button class="fc-btn btn-agak" onclick="answer(1)">~ Agak ingat</button>
             <button class="fc-btn btn-hafal" onclick="answer(2)">✓ Hafal!</button>
           </div>
-          <p style="font-size:11px;color:var(--muted);text-align:center;max-width:420px;margin-top:4px">Biru = hiragana · Teal = katakana · Progress tersimpan otomatis</p>
+          <p style="font-size:11px;color:var(--muted);text-align:center;max-width:420px;margin-top:4px" id="fc-legend">Biru = hiragana · Teal = katakana · Progress tersimpan otomatis</p>
         </div>
       </div>
 
       <div class="page" id="page-grammar">
-        <div class="page-title">Grammar <span>N5</span></div>
+        <div class="page-title">Grammar <span id="grammar-badge">N5</span></div>
         <div class="page-sub">Pola kalimat dasar dengan contoh.</div>
         <div id="grammar-list"></div>
       </div>
 
       <div class="page" id="page-quiz">
-        <div class="page-title">Quiz Harian <span>N5</span></div>
-        <div class="page-sub">Setiap soal menampilkan kanji + furigana.</div>
+        <div class="page-title">Quiz Harian <span id="quiz-badge">N5</span></div>
+        <div class="page-sub" id="quiz-page-sub">Setiap soal menampilkan kanji + furigana.</div>
         <div id="quiz-area"></div>
       </div>
 
@@ -1543,26 +1543,26 @@ const GRAMMAR_EN = [
 // QUIZ BAHASA INGGRIS
 // ══════════════════════════════════════════════════
 const QUIZ_DATA_EN = [
-  {q:"'House' artinya...",jp:'House',h:'/haʊs/',opts:['Mobil','Rumah','Sekolah','Kantor'],ans:1},
-  {q:"Bagaimana cara membaca 'work'?",jp:'work',h:'kata kerja',opts:['/wɜːrk/','/wɔːk/','/wɪk/','/wɑːrk/'],ans:0},
-  {q:"'I ___ to work every day.' (Simple Present)",jp:'I ___ to work every day.',h:'',opts:['go','goes','going','went'],ans:0},
-  {q:"'Expensive' artinya...",jp:'Expensive',h:'/ɪkˈspensɪv/',opts:['Murah','Mahal','Gratis','Baru'],ans:1},
-  {q:"Apa arti 'deadline'?",jp:'Deadline',h:'/ˈdedlaɪn/',opts:['Rapat','Gaji','Tenggat waktu','Kontrak'],ans:2},
-  {q:"'She ___ to Japan last year.' (Simple Past)",jp:'She ___ to Japan last year.',h:'',opts:['go','goes','went','going'],ans:2},
-  {q:"'Colleague' artinya...",jp:'Colleague',h:'/ˈkɒliːɡ/',opts:['Atasan','Rekan kerja','Pelanggan','Manajer'],ans:1},
-  {q:"Pilih artikel yang tepat: '___ elephant'",jp:'___ elephant',h:'',opts:['A','An','The only','No article'],ans:1},
-  {q:"'Tired' artinya...",jp:'Tired',h:'/ˈtaɪərd/',opts:['Kuat','Lelah','Bahagia','Sedih'],ans:1},
-  {q:"'There ___ many people at the station.'",jp:'There ___ many people at the station.',h:'',opts:['is','are','be','was'],ans:1},
-  {q:"'Passport' artinya...",jp:'Passport',h:'/ˈpæspɔːrt/',opts:['Tiket','Paspor','Koper','Visa'],ans:1},
-  {q:"'This car is ___ than that one.' (fast)",jp:'This car is ___ than that one.',h:'',opts:['fast','faster','fastest','more fast'],ans:1},
-  {q:"Apa arti 'negotiate'?",jp:'Negotiate',h:'/nɪˈɡoʊʃieɪt/',opts:['Menolak','Bernegosiasi','Menyetujui','Membatalkan'],ans:1},
-  {q:"'You ___ wear a helmet at the factory.' (keharusan)",jp:'You ___ wear a helmet at the factory.',h:'',opts:['can','should','must','may'],ans:2},
-  {q:"'Understand' artinya...",jp:'Understand',h:'/ˌʌndərˈstænd/',opts:['Melupakan','Mengingat','Mengerti','Menjawab'],ans:2},
-  {q:"'___ do you work?' (menanyakan tempat)",jp:'___ do you work?',h:'',opts:['What','Where','When','Who'],ans:1},
-  {q:"'Congratulations' artinya...",jp:'Congratulations',h:'/kənˌɡrætʃəˈleɪʃənz/',opts:['Maaf','Selamat','Terima kasih','Sama-sama'],ans:1},
-  {q:"'I am ___ English right now.' (Present Continuous)",jp:'I am ___ English right now.',h:'',opts:['study','studies','studying','studied'],ans:2},
-  {q:"'Achievement' artinya...",jp:'Achievement',h:'/əˈtʃiːvmənt/',opts:['Kegagalan','Pencapaian','Tantangan','Kesalahan'],ans:1},
-  {q:"'I need ___ information about the job.' (positif)",jp:'I need ___ information about the job.',h:'',opts:['some','any','a','an'],ans:0},
+  {instruction:'Apa arti kata berikut?',main:'House',sub:'/haʊs/',opts:['Mobil','Rumah','Sekolah','Kantor'],ans:1},
+  {instruction:'Bagaimana cara membaca kata ini?',main:'work',sub:'kata kerja',opts:['/wɜːrk/','/wɔːk/','/wɪk/','/wɑːrk/'],ans:0},
+  {instruction:'Lengkapi kalimat berikut (Simple Present):',main:'I ___ to work every day.',sub:'',opts:['go','goes','going','went'],ans:0},
+  {instruction:'Apa arti kata berikut?',main:'Expensive',sub:'/ɪkˈspensɪv/',opts:['Murah','Mahal','Gratis','Baru'],ans:1},
+  {instruction:'Apa arti kata berikut?',main:'Deadline',sub:'/ˈdedlaɪn/',opts:['Rapat','Gaji','Tenggat waktu','Kontrak'],ans:2},
+  {instruction:'Lengkapi kalimat berikut (Simple Past):',main:'She ___ to Japan last year.',sub:'',opts:['go','goes','went','going'],ans:2},
+  {instruction:'Apa arti kata berikut?',main:'Colleague',sub:'/ˈkɒliːɡ/',opts:['Atasan','Rekan kerja','Pelanggan','Manajer'],ans:1},
+  {instruction:'Pilih artikel yang tepat:',main:'___ elephant',sub:'',opts:['A','An','The only','No article'],ans:1},
+  {instruction:'Apa arti kata berikut?',main:'Tired',sub:'/ˈtaɪərd/',opts:['Kuat','Lelah','Bahagia','Sedih'],ans:1},
+  {instruction:'Lengkapi kalimat berikut (There is/are):',main:'There ___ many people at the station.',sub:'',opts:['is','are','be','was'],ans:1},
+  {instruction:'Apa arti kata berikut?',main:'Passport',sub:'/ˈpæspɔːrt/',opts:['Tiket','Paspor','Koper','Visa'],ans:1},
+  {instruction:'Lengkapi kalimat perbandingan berikut (fast):',main:'This car is ___ than that one.',sub:'',opts:['fast','faster','fastest','more fast'],ans:1},
+  {instruction:'Apa arti kata berikut?',main:'Negotiate',sub:'/nɪˈɡoʊʃieɪt/',opts:['Menolak','Bernegosiasi','Menyetujui','Membatalkan'],ans:1},
+  {instruction:'Lengkapi kalimat berikut (modal verb):',main:'You ___ wear a helmet at the factory.',sub:'',opts:['can','should','must','may'],ans:2},
+  {instruction:'Apa arti kata berikut?',main:'Understand',sub:'/ˌʌndərˈstænd/',opts:['Melupakan','Mengingat','Mengerti','Menjawab'],ans:2},
+  {instruction:'Pilih kata tanya yang tepat:',main:'___ do you work?',sub:'',opts:['What','Where','When','Who'],ans:1},
+  {instruction:'Apa arti kata berikut?',main:'Congratulations',sub:'/kənˌɡrætʃəˈleɪʃənz/',opts:['Maaf','Selamat','Terima kasih','Sama-sama'],ans:1},
+  {instruction:'Lengkapi kalimat berikut (Present Continuous):',main:'I am ___ English right now.',sub:'',opts:['study','studies','studying','studied'],ans:2},
+  {instruction:'Apa arti kata berikut?',main:'Achievement',sub:'/əˈtʃiːvmənt/',opts:['Kegagalan','Pencapaian','Tantangan','Kesalahan'],ans:1},
+  {instruction:'Lengkapi kalimat berikut (some/any):',main:'I need ___ information about the job.',sub:'',opts:['some','any','a','an'],ans:0},
 ];
 
 // ══════════════════════════════════════════════════
@@ -1773,6 +1773,23 @@ function setLanguage(lang) {
   document.documentElement.setAttribute('data-lang', lang);
   document.getElementById('lang-btn-jp').classList.toggle('active', lang === 'jp');
   document.getElementById('lang-btn-en').classList.toggle('active', lang === 'en');
+
+  // Chrome/branding UI yang HARUS ikut berganti — ini yang bikin "kecampur"
+  // kalau dibiarkan statis (misal badge N5 atau logo 日本語 nongol di mode EN).
+  document.getElementById('logo-main-text').textContent = lang === 'en' ? 'English' : '日本語';
+  document.getElementById('logo-sub-text').textContent = lang === 'en' ? 'BELAJAR INGGRIS' : 'NIHONGO BELAJAR';
+  document.getElementById('dashboard-badge').textContent = lang === 'en' ? 'EN' : 'N5';
+  document.getElementById('grammar-badge').textContent = lang === 'en' ? 'EN' : 'N5';
+  document.getElementById('quiz-badge').textContent = lang === 'en' ? 'EN' : 'N5';
+  document.getElementById('quiz-page-sub').textContent = lang === 'en'
+    ? 'Kuis kosakata & grammar bahasa Inggris — 10 soal setiap sesi.'
+    : 'Setiap soal menampilkan kanji + furigana.';
+  document.getElementById('fc-hint').textContent = lang === 'en'
+    ? 'Ketuk untuk lihat pengucapan & arti ↓'
+    : 'Ketuk untuk lihat bacaan & arti ↓';
+  document.getElementById('fc-legend').textContent = lang === 'en'
+    ? 'Biru = kelas kata · Teal = pengucapan · Progress tersimpan otomatis'
+    : 'Biru = hiragana · Teal = katakana · Progress tersimpan otomatis';
 
   const pagesByLang = {
     jp: ['dashboard','hiragana','katakana','dakuon','flashcard','grammar','quiz','kamus','leaderboard'],
@@ -1993,12 +2010,17 @@ function startQuiz() {
 function showQuestion() {
   const q = quizQuestions[quizIndex];
   quizAnswered = false;
+  // Skema baru (EN): instruction/main/sub terpisah supaya tidak dobel dengan kalimat besar.
+  // Skema lama (JP): q/jp/h — tetap didukung supaya kuis Jepang tidak berubah.
+  const instruction = q.instruction !== undefined ? q.instruction : q.q;
+  const mainText = q.main !== undefined ? q.main : q.jp;
+  const subText = q.sub !== undefined ? q.sub : q.h;
   document.getElementById('quiz-area').innerHTML = `
     <div class="card">
       <div style="font-size:12px;color:var(--muted);margin-bottom:12px">Soal ${quizIndex+1} dari ${quizQuestions.length} | Skor: ${quizScore}</div>
-      <div style="font-size:15px;font-weight:700;margin-bottom:4px">${q.q}</div>
-      <div class="quiz-jp-big">${q.jp}</div>
-      <div class="quiz-furigana">${q.h}</div>
+      <div style="font-size:15px;font-weight:700;margin-bottom:4px">${instruction}</div>
+      <div class="quiz-jp-big">${mainText}</div>
+      ${subText ? `<div class="quiz-furigana">${subText}</div>` : '<div style="margin-bottom:16px"></div>'}
       <div class="quiz-options">${q.opts.map((o,i) => `<button class="quiz-opt" onclick="answerQuiz(${i})">${o}</button>`).join('')}</div>
     </div>`;
 }
