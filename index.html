@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id" data-theme="dark">
+<html lang="id" data-theme="dark" data-lang="jp">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -396,6 +396,9 @@ html[data-lang="jp"] .lang-en-only{display:none !important}
 .grammar-ex-kana{font-size:13px;color:var(--accent);font-family:'Noto Sans JP',sans-serif;margin-top:2px}
 .grammar-ex-rom{font-size:12px;color:var(--muted);margin-top:2px}
 .grammar-ex-id{font-size:13px;margin-top:4px}
+.grammar-learn-btn{flex-shrink:0;padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;white-space:nowrap}
+.grammar-learn-btn.learned{border-color:var(--green);background:rgba(74,222,128,.12);color:var(--green)}
+.grammar-learn-btn:hover{border-color:var(--accent)}
 
 /* ══════════════════════════════════════════
    KAMUS KANJI
@@ -754,7 +757,7 @@ html[data-theme="light"] .sidebar { box-shadow:2px 0 16px rgba(0,0,100,.08); }
         <div class="logo-en">NIHONGO BELAJAR</div>
       </div>
       <div class="nav-section">Menu Utama</div>
-      <div class="nav-item active" onclick="nav('dashboard',this)"><span class="nav-icon">⊞</span><span>Dashboard</span></div>
+      <div class="nav-item active" id="nav-dashboard" onclick="nav('dashboard',this)"><span class="nav-icon">⊞</span><span>Dashboard</span></div>
       <div class="nav-item lang-jp-only" onclick="nav('hiragana',this)"><span class="nav-icon">あ</span><span>Hiragana</span></div>
       <div class="nav-item lang-jp-only" onclick="nav('katakana',this)"><span class="nav-icon">ア</span><span>Katakana</span></div>
       <div class="nav-item lang-jp-only" onclick="nav('dakuon',this)"><span class="nav-icon">が</span><span>Dakuon & Youon</span></div>
@@ -799,7 +802,7 @@ html[data-theme="light"] .sidebar { box-shadow:2px 0 16px rgba(0,0,100,.08); }
         <div class="page-sub">Progress belajarmu tersimpan otomatis ke akun</div>
         <div class="stat-grid">
           <div class="stat-box"><div class="stat-num" style="color:var(--accent)" id="stat-vocab">0</div><div class="stat-lbl">Kosakata dikuasai</div></div>
-          <div class="stat-box"><div class="stat-num" style="color:var(--teal)" id="stat-kana">0</div><div class="stat-lbl">Kana dihafalkan</div></div>
+          <div class="stat-box"><div class="stat-num" style="color:var(--teal)" id="stat-kana">0</div><div class="stat-lbl" id="stat-kana-label">Kana dihafalkan</div></div>
           <div class="stat-box"><div class="stat-num" style="color:var(--pink)" id="stat-quiz">0</div><div class="stat-lbl">Quiz selesai</div></div>
         </div>
         <div class="card lang-jp-only">
@@ -961,6 +964,16 @@ html[data-theme="light"] .sidebar { box-shadow:2px 0 16px rgba(0,0,100,.08); }
         <div class="kanji-grid" id="kanji-grid"></div>
       </div>
 
+      <div class="page" id="page-kamus_en">
+        <div class="page-title">Kamus Kata <span>EN</span></div>
+        <div class="page-sub">Kosakata Inggris dasar &amp; menengah. Klik untuk detail &amp; contoh kalimat.</div>
+        <div class="kanji-search-row">
+          <input class="kanji-search" id="word-search" placeholder="Cari kata atau artinya..." oninput="filterWordsInput()">
+        </div>
+        <div class="kanji-filter" id="word-filter"></div>
+        <div class="kanji-grid" id="word-grid"></div>
+      </div>
+
       <div class="page" id="page-leaderboard">
         <div class="page-title">Leaderboard <span>🏆</span></div>
         <div class="page-sub">Top pelajar berdasarkan XP. Semangat belajar!</div>
@@ -1008,9 +1021,9 @@ html[data-theme="light"] .sidebar { box-shadow:2px 0 16px rgba(0,0,100,.08); }
   <div class="modal-box">
     <div class="modal-kanji" id="modal-char"></div>
     <div class="modal-meaning" id="modal-meaning"></div>
-    <div class="modal-row"><span class="modal-label">On-yomi</span><span class="modal-val kanji-on" id="modal-on"></span></div>
-    <div class="modal-row"><span class="modal-label">Kun-yomi</span><span class="modal-val kanji-kun" id="modal-kun"></span></div>
-    <div class="modal-row"><span class="modal-label">Stroke</span><span class="modal-val" id="modal-stroke"></span></div>
+    <div class="modal-row"><span class="modal-label" id="modal-label-on">On-yomi</span><span class="modal-val kanji-on" id="modal-on"></span></div>
+    <div class="modal-row"><span class="modal-label" id="modal-label-kun">Kun-yomi</span><span class="modal-val kanji-kun" id="modal-kun"></span></div>
+    <div class="modal-row"><span class="modal-label" id="modal-label-stroke">Stroke</span><span class="modal-val" id="modal-stroke"></span></div>
     <div style="margin-top:12px"><div class="grammar-label">Contoh kata</div><div id="modal-examples"></div></div>
     <button class="modal-close" onclick="document.getElementById('kanji-modal').classList.remove('show')">Tutup</button>
   </div>
@@ -1023,11 +1036,13 @@ html[data-theme="light"] .sidebar { box-shadow:2px 0 16px rgba(0,0,100,.08); }
 // STATE
 // ══════════════════════════════════════════════════
 let currentUser = null, userProgress = {};
-let learnedH = [], learnedK = [], learnedD = [], learnedVocab = {};
+let learnedH = [], learnedK = [], learnedD = [], learnedVocab = {}, learnedGrammar = {};
 let saveTimer = null;
 let fcCategory = 'kerja', fcCards = [], fcIndex = 0, fcFlipped = false;
 let quizIndex = 0, quizScore = 0, quizAnswered = false, quizQuestions = [];
 let kanjiFilter = 'semua', kanjiSearch = '';
+let wordFilter = 'semua', wordSearch = '';
+let currentLang = 'jp';
 
 // ══════════════════════════════════════════════════
 // STREAK SYSTEM (nyata, bukan gimik)
@@ -1273,7 +1288,7 @@ const KANJI_LIST = [
   {k:'物',m:'Benda / Hal',on:'ブツ・モツ',kun:'もの',s:8,cat:'benda',ex:[{w:'物',r:'もの',t:'Benda'},{w:'食べ物',r:'たべもの',t:'Makanan'}]},
   {k:'所',m:'Tempat',on:'ショ・ジョ',kun:'ところ',s:8,cat:'tempat',ex:[{w:'場所',r:'ばしょ',t:'Lokasi'},{w:'住所',r:'じゅうしょ',t:'Alamat'}]},
 ];
-const GRAMMAR = [
+const GRAMMAR_JP = [
   {pattern:'〜は〜です',nama:'Pola identitas dasar',desc:'"は" (wa) = penanda topik, "です" (desu) = kata kerja sopan "adalah".',
    contoh:[{jp:'私は会社員です。',kana:'わたしはかいしゃいんです。',r:'Watashi wa kaishain desu.',id:'Saya adalah karyawan perusahaan.'},{jp:'これは本です。',kana:'これはほんです。',r:'Kore wa hon desu.',id:'Ini adalah buku.'}]},
   {pattern:'〜を〜ます',nama:'Pola kalimat kerja sopan',desc:'"を" (wo/o) = penanda objek. Kata kerja bentuk "-masu" untuk percakapan formal.',
@@ -1291,7 +1306,7 @@ const GRAMMAR = [
   {pattern:'〜ことができます',nama:'Bisa / Mampu melakukan',desc:'Kata benda + ことができます = menyatakan kemampuan.',
    contoh:[{jp:'日本語を話すことができます。',kana:'にほんごをはなすことができます。',r:'Nihongo o hanasu koto ga dekimasu.',id:'Saya bisa berbicara bahasa Jepang.'},{jp:'運転することができます。',kana:'うんてんすることができます。',r:'Unten suru koto ga dekimasu.',id:'Saya bisa mengemudi.'}]},
 ];
-const QUIZ_DATA = [
+const QUIZ_DATA_JP = [
   {q:'会社 artinya...',jp:'会社',h:'かいしゃ',opts:['Pekerjaan','Perusahaan','Pabrik','Gaji'],ans:1},
   {q:'Bagaimana cara baca 仕事?',jp:'仕事',h:'しごと',opts:['kaisha','kyūryō','shigoto','zangyō'],ans:2},
   {q:'"Saya ingin bekerja di Jepang":',jp:'日本で働き___です',h:'にほんではたらき___です',opts:['ます','たい','ません','います'],ans:1},
@@ -1307,6 +1322,247 @@ const QUIZ_DATA = [
   {q:'元気 artinya...',jp:'元気',h:'げんき',opts:['Lelah','Sakit','Sehat/bersemangat','Sedih'],ans:2},
   {q:'名前 artinya...',jp:'名前',h:'なまえ',opts:['Alamat','Nomor','Nama','Usia'],ans:2},
   {q:'毎日 artinya...',jp:'毎日',h:'まいにち',opts:['Setiap minggu','Setiap bulan','Setiap tahun','Setiap hari'],ans:3},
+];
+
+// ══════════════════════════════════════════════════
+// KATEGORI FLASHCARD (per bahasa)
+// ══════════════════════════════════════════════════
+const JP_CATS = { kerja: 'Kosakata Kerja', sehari: 'Sehari-hari', angka: 'Angka & Waktu', percakapan: 'Percakapan' };
+const EN_CATS = { dasar: 'Benda Sehari-hari', kerja: 'Kata Kerja', sifat: 'Kata Sifat', angka: 'Angka & Waktu', menengah: 'Kosakata Menengah', percakapan: 'Percakapan' };
+
+// ══════════════════════════════════════════════════
+// VOCAB BAHASA INGGRIS — Dasar sampai Menengah
+// ══════════════════════════════════════════════════
+const VOCAB_EN = {
+  dasar:[
+    {word:'house',ipa:'/haʊs/',pos:'kata benda',id:'Rumah',ex:[{en:'I live in a small house.',id:'Saya tinggal di rumah kecil.'},{en:'Her house is near the park.',id:'Rumahnya dekat taman.'}]},
+    {word:'table',ipa:'/ˈteɪbəl/',pos:'kata benda',id:'Meja',ex:[{en:'Put the book on the table.',id:'Letakkan buku di atas meja.'},{en:'We need a bigger table.',id:'Kita butuh meja yang lebih besar.'}]},
+    {word:'chair',ipa:'/tʃɛər/',pos:'kata benda',id:'Kursi',ex:[{en:'Please sit on this chair.',id:'Silakan duduk di kursi ini.'},{en:'The chair is broken.',id:'Kursinya rusak.'}]},
+    {word:'window',ipa:'/ˈwɪndoʊ/',pos:'kata benda',id:'Jendela',ex:[{en:'Open the window, please.',id:'Tolong buka jendelanya.'},{en:'I can see the garden from the window.',id:'Saya bisa melihat taman dari jendela.'}]},
+    {word:'door',ipa:'/dɔːr/',pos:'kata benda',id:'Pintu',ex:[{en:'Close the door quietly.',id:'Tutup pintunya pelan-pelan.'},{en:'Someone is knocking on the door.',id:'Seseorang mengetuk pintu.'}]},
+    {word:'water',ipa:'/ˈwɔːtər/',pos:'kata benda',id:'Air',ex:[{en:'I drink water every morning.',id:'Saya minum air setiap pagi.'},{en:'The water is very cold.',id:'Airnya sangat dingin.'}]},
+    {word:'food',ipa:'/fuːd/',pos:'kata benda',id:'Makanan',ex:[{en:'The food here is delicious.',id:'Makanan di sini enak.'},{en:'We ran out of food.',id:'Makanan kami habis.'}]},
+    {word:'phone',ipa:'/foʊn/',pos:'kata benda',id:'Telepon',ex:[{en:'My phone is out of battery.',id:'Baterai teleponku habis.'},{en:'Can I use your phone?',id:'Boleh saya pakai teleponmu?'}]},
+    {word:'computer',ipa:'/kəmˈpjuːtər/',pos:'kata benda',id:'Komputer',ex:[{en:'I work on my computer every day.',id:'Saya bekerja di komputer setiap hari.'},{en:'The computer is very slow.',id:'Komputernya sangat lambat.'}]},
+    {word:'bag',ipa:'/bæg/',pos:'kata benda',id:'Tas',ex:[{en:'She carries a big bag.',id:'Dia membawa tas besar.'},{en:'I left my bag at home.',id:'Saya meninggalkan tas di rumah.'}]},
+    {word:'key',ipa:'/kiː/',pos:'kata benda',id:'Kunci',ex:[{en:'I lost my house key.',id:'Saya kehilangan kunci rumah.'},{en:'This is the key to the office.',id:'Ini kunci kantor.'}]},
+    {word:'money',ipa:'/ˈmʌni/',pos:'kata benda',id:'Uang',ex:[{en:"I don't have much money.",id:'Saya tidak punya banyak uang.'},{en:'He saved money for a trip.',id:'Dia menabung uang untuk liburan.'}]},
+    {word:'clock',ipa:'/klɒk/',pos:'kata benda',id:'Jam dinding',ex:[{en:'The clock on the wall is broken.',id:'Jam di dinding rusak.'},{en:"Look at the clock, it's late.",id:'Lihat jamnya, sudah larut.'}]},
+    {word:'road',ipa:'/roʊd/',pos:'kata benda',id:'Jalan',ex:[{en:'This road is very busy.',id:'Jalan ini sangat ramai.'},{en:'We took the wrong road.',id:'Kita salah jalan.'}]},
+    {word:'car',ipa:'/kɑːr/',pos:'kata benda',id:'Mobil',ex:[{en:'He bought a new car.',id:'Dia membeli mobil baru.'},{en:"My car won't start.",id:'Mobil saya tidak mau menyala.'}]},
+    {word:'city',ipa:'/ˈsɪti/',pos:'kata benda',id:'Kota',ex:[{en:'Tokyo is a big city.',id:'Tokyo adalah kota besar.'},{en:'I want to live in a quiet city.',id:'Saya ingin tinggal di kota yang tenang.'}]},
+    {word:'school',ipa:'/skuːl/',pos:'kata benda',id:'Sekolah',ex:[{en:'My children go to school by bus.',id:'Anak-anak saya pergi ke sekolah naik bus.'},{en:'The school starts at eight.',id:'Sekolah dimulai jam delapan.'}]},
+    {word:'hospital',ipa:'/ˈhɒspɪtəl/',pos:'kata benda',id:'Rumah sakit',ex:[{en:'She works at a hospital.',id:'Dia bekerja di rumah sakit.'},{en:'He was taken to the hospital.',id:'Dia dibawa ke rumah sakit.'}]},
+    {word:'market',ipa:'/ˈmɑːrkɪt/',pos:'kata benda',id:'Pasar',ex:[{en:'We buy vegetables at the market.',id:'Kami membeli sayur di pasar.'},{en:'The market opens early.',id:'Pasarnya buka pagi-pagi.'}]},
+    {word:'letter',ipa:'/ˈletər/',pos:'kata benda',id:'Surat',ex:[{en:'I wrote a letter to my friend.',id:'Saya menulis surat untuk teman saya.'},{en:'Did you receive my letter?',id:'Apakah kamu menerima suratku?'}]},
+    {word:'paper',ipa:'/ˈpeɪpər/',pos:'kata benda',id:'Kertas',ex:[{en:'Please give me a piece of paper.',id:'Tolong beri saya selembar kertas.'},{en:'The document is printed on paper.',id:'Dokumennya dicetak di kertas.'}]},
+    {word:'photo',ipa:'/ˈfoʊtoʊ/',pos:'kata benda',id:'Foto',ex:[{en:'Can you take a photo of us?',id:'Bisakah kamu memotret kami?'},{en:'I keep old photos in this box.',id:'Saya menyimpan foto lama di kotak ini.'}]},
+    {word:'umbrella',ipa:'/ʌmˈbrelə/',pos:'kata benda',id:'Payung',ex:[{en:'Bring an umbrella, it might rain.',id:'Bawa payung, mungkin akan hujan.'},{en:'I forgot my umbrella at the office.',id:'Saya lupa payung saya di kantor.'}]},
+    {word:'bottle',ipa:'/ˈbɒtəl/',pos:'kata benda',id:'Botol',ex:[{en:'Fill the bottle with water.',id:'Isi botol dengan air.'},{en:'She drank a bottle of juice.',id:'Dia minum sebotol jus.'}]},
+    {word:'mirror',ipa:'/ˈmɪrər/',pos:'kata benda',id:'Cermin',ex:[{en:'He looked at himself in the mirror.',id:'Dia bercermin melihat dirinya.'},{en:'The mirror in the bathroom is broken.',id:'Cermin di kamar mandi pecah.'}]},
+  ],
+  kerja:[
+    {word:'go',ipa:'/ɡoʊ/',pos:'kata kerja',id:'Pergi',ex:[{en:'I go to work by train.',id:'Saya pergi kerja naik kereta.'},{en:"Let's go to the market.",id:'Ayo pergi ke pasar.'}]},
+    {word:'come',ipa:'/kʌm/',pos:'kata kerja',id:'Datang',ex:[{en:'Please come to my house.',id:'Tolong datang ke rumah saya.'},{en:'She will come tomorrow.',id:'Dia akan datang besok.'}]},
+    {word:'eat',ipa:'/iːt/',pos:'kata kerja',id:'Makan',ex:[{en:'We eat dinner at seven.',id:'Kami makan malam jam tujuh.'},{en:'I ate too much rice.',id:'Saya makan nasi terlalu banyak.'}]},
+    {word:'drink',ipa:'/drɪŋk/',pos:'kata kerja',id:'Minum',ex:[{en:'He drinks coffee every morning.',id:'Dia minum kopi setiap pagi.'},{en:"Don't drink cold water.",id:'Jangan minum air dingin.'}]},
+    {word:'sleep',ipa:'/sliːp/',pos:'kata kerja',id:'Tidur',ex:[{en:'I sleep at ten every night.',id:'Saya tidur jam sepuluh setiap malam.'},{en:'The baby is sleeping now.',id:'Bayinya sedang tidur sekarang.'}]},
+    {word:'work',ipa:'/wɜːrk/',pos:'kata kerja',id:'Bekerja',ex:[{en:'She works in a factory.',id:'Dia bekerja di pabrik.'},{en:'I work eight hours a day.',id:'Saya bekerja delapan jam sehari.'}]},
+    {word:'study',ipa:'/ˈstʌdi/',pos:'kata kerja',id:'Belajar',ex:[{en:'He studies English every day.',id:'Dia belajar bahasa Inggris setiap hari.'},{en:'We study together on weekends.',id:'Kami belajar bersama di akhir pekan.'}]},
+    {word:'read',ipa:'/riːd/',pos:'kata kerja',id:'Membaca',ex:[{en:'I like to read books.',id:'Saya suka membaca buku.'},{en:'She reads the news every morning.',id:'Dia membaca berita setiap pagi.'}]},
+    {word:'write',ipa:'/raɪt/',pos:'kata kerja',id:'Menulis',ex:[{en:'Please write your name here.',id:'Tolong tulis nama Anda di sini.'},{en:'He writes a report every week.',id:'Dia menulis laporan setiap minggu.'}]},
+    {word:'speak',ipa:'/spiːk/',pos:'kata kerja',id:'Berbicara',ex:[{en:'Can you speak English?',id:'Bisakah kamu berbicara bahasa Inggris?'},{en:'She speaks softly.',id:'Dia berbicara dengan lembut.'}]},
+    {word:'listen',ipa:'/ˈlɪsən/',pos:'kata kerja',id:'Mendengarkan',ex:[{en:'Listen to me carefully.',id:'Dengarkan saya baik-baik.'},{en:'I listen to music at night.',id:'Saya mendengarkan musik di malam hari.'}]},
+    {word:'watch',ipa:'/wɒtʃ/',pos:'kata kerja',id:'Menonton',ex:[{en:'We watch TV after dinner.',id:'Kami menonton TV setelah makan malam.'},{en:'Watch out for the car!',id:'Awas mobil!'}]},
+    {word:'play',ipa:'/pleɪ/',pos:'kata kerja',id:'Bermain',ex:[{en:'The children play in the park.',id:'Anak-anak bermain di taman.'},{en:'He plays football on Sundays.',id:'Dia bermain sepak bola setiap Minggu.'}]},
+    {word:'buy',ipa:'/baɪ/',pos:'kata kerja',id:'Membeli',ex:[{en:'I need to buy some vegetables.',id:'Saya perlu membeli sayur.'},{en:'She bought a new phone.',id:'Dia membeli telepon baru.'}]},
+    {word:'sell',ipa:'/sel/',pos:'kata kerja',id:'Menjual',ex:[{en:'They sell fresh fruit here.',id:'Mereka menjual buah segar di sini.'},{en:'He sold his old car.',id:'Dia menjual mobil lamanya.'}]},
+    {word:'open',ipa:'/ˈoʊpən/',pos:'kata kerja',id:'Membuka',ex:[{en:'Please open the door.',id:'Tolong buka pintunya.'},{en:'The shop opens at nine.',id:'Toko buka jam sembilan.'}]},
+    {word:'close',ipa:'/kloʊz/',pos:'kata kerja',id:'Menutup',ex:[{en:"Close the window, it's cold.",id:'Tutup jendelanya, dingin.'},{en:'The bank closes at four.',id:'Bank tutup jam empat.'}]},
+    {word:'walk',ipa:'/wɔːk/',pos:'kata kerja',id:'Berjalan',ex:[{en:'I walk to the station every day.',id:'Saya berjalan ke stasiun setiap hari.'},{en:"Let's walk in the park.",id:'Ayo jalan-jalan di taman.'}]},
+    {word:'run',ipa:'/rʌn/',pos:'kata kerja',id:'Berlari',ex:[{en:'He runs every morning.',id:'Dia berlari setiap pagi.'},{en:'I ran to catch the bus.',id:'Saya berlari untuk mengejar bus.'}]},
+    {word:'sit',ipa:'/sɪt/',pos:'kata kerja',id:'Duduk',ex:[{en:'Please sit down.',id:'Silakan duduk.'},{en:'She sat next to me.',id:'Dia duduk di sebelah saya.'}]},
+    {word:'stand',ipa:'/stænd/',pos:'kata kerja',id:'Berdiri',ex:[{en:'Please stand up.',id:'Tolong berdiri.'},{en:'We stood in line for an hour.',id:'Kami berdiri antre selama satu jam.'}]},
+    {word:'help',ipa:'/help/',pos:'kata kerja',id:'Membantu',ex:[{en:'Can you help me with this?',id:'Bisakah kamu membantu saya dengan ini?'},{en:'She helps her mother every day.',id:'Dia membantu ibunya setiap hari.'}]},
+    {word:'wait',ipa:'/weɪt/',pos:'kata kerja',id:'Menunggu',ex:[{en:'Please wait a moment.',id:'Tolong tunggu sebentar.'},{en:'We waited for the bus for an hour.',id:'Kami menunggu bus selama satu jam.'}]},
+    {word:'understand',ipa:'/ˌʌndərˈstænd/',pos:'kata kerja',id:'Mengerti',ex:[{en:"I don't understand this word.",id:'Saya tidak mengerti kata ini.'},{en:'Do you understand the instructions?',id:'Apakah kamu mengerti instruksinya?'}]},
+    {word:'remember',ipa:'/rɪˈmembər/',pos:'kata kerja',id:'Mengingat',ex:[{en:"I can't remember his name.",id:'Saya tidak bisa mengingat namanya.'},{en:'Remember to bring your passport.',id:'Ingat untuk membawa paspormu.'}]},
+  ],
+  sifat:[
+    {word:'big',ipa:'/bɪɡ/',pos:'kata sifat',id:'Besar',ex:[{en:'They live in a big house.',id:'Mereka tinggal di rumah besar.'},{en:'That is a big problem.',id:'Itu masalah besar.'}]},
+    {word:'small',ipa:'/smɔːl/',pos:'kata sifat',id:'Kecil',ex:[{en:'I have a small room.',id:'Saya punya kamar kecil.'},{en:'The car is too small for us.',id:'Mobilnya terlalu kecil untuk kami.'}]},
+    {word:'new',ipa:'/nuː/',pos:'kata sifat',id:'Baru',ex:[{en:'I bought a new laptop.',id:'Saya membeli laptop baru.'},{en:'She has a new job.',id:'Dia punya pekerjaan baru.'}]},
+    {word:'old',ipa:'/oʊld/',pos:'kata sifat',id:'Tua / Lama',ex:[{en:'This building is very old.',id:'Bangunan ini sangat tua.'},{en:'My grandfather is old but healthy.',id:'Kakek saya tua tapi sehat.'}]},
+    {word:'good',ipa:'/ɡʊd/',pos:'kata sifat',id:'Bagus',ex:[{en:"That's a good idea.",id:'Itu ide yang bagus.'},{en:'He is a good teacher.',id:'Dia guru yang bagus.'}]},
+    {word:'bad',ipa:'/bæd/',pos:'kata sifat',id:'Buruk',ex:[{en:'The weather is bad today.',id:'Cuacanya buruk hari ini.'},{en:'I had a bad day at work.',id:'Saya mengalami hari yang buruk di kantor.'}]},
+    {word:'happy',ipa:'/ˈhæpi/',pos:'kata sifat',id:'Bahagia',ex:[{en:'She looks very happy today.',id:'Dia terlihat sangat bahagia hari ini.'},{en:'We are happy with the result.',id:'Kami senang dengan hasilnya.'}]},
+    {word:'sad',ipa:'/sæd/',pos:'kata sifat',id:'Sedih',ex:[{en:'He felt sad after the news.',id:'Dia merasa sedih setelah mendengar berita itu.'},{en:"Don't be sad, everything will be fine.",id:'Jangan sedih, semua akan baik-baik saja.'}]},
+    {word:'easy',ipa:'/ˈiːzi/',pos:'kata sifat',id:'Mudah',ex:[{en:'This exercise is easy.',id:'Latihan ini mudah.'},{en:'It’s easy to make mistakes.',id:'Mudah untuk membuat kesalahan.'}]},
+    {word:'difficult',ipa:'/ˈdɪfɪkəlt/',pos:'kata sifat',id:'Sulit',ex:[{en:'This exam is very difficult.',id:'Ujian ini sangat sulit.'},{en:'It was a difficult decision.',id:'Itu keputusan yang sulit.'}]},
+    {word:'fast',ipa:'/fæst/',pos:'kata sifat',id:'Cepat',ex:[{en:'He is a fast runner.',id:'Dia pelari yang cepat.'},{en:'The train is very fast.',id:'Keretanya sangat cepat.'}]},
+    {word:'slow',ipa:'/sloʊ/',pos:'kata sifat',id:'Lambat',ex:[{en:'The internet here is slow.',id:'Internet di sini lambat.'},{en:'Please speak slowly.',id:'Tolong bicara pelan-pelan.'}]},
+    {word:'hot',ipa:'/hɒt/',pos:'kata sifat',id:'Panas',ex:[{en:'The weather is very hot today.',id:'Cuacanya sangat panas hari ini.'},{en:'Be careful, the plate is hot.',id:'Hati-hati, piringnya panas.'}]},
+    {word:'cold',ipa:'/koʊld/',pos:'kata sifat',id:'Dingin',ex:[{en:"It's cold outside.",id:'Di luar dingin.'},{en:'I like cold drinks.',id:'Saya suka minuman dingin.'}]},
+    {word:'expensive',ipa:'/ɪkˈspensɪv/',pos:'kata sifat',id:'Mahal',ex:[{en:'This restaurant is expensive.',id:'Restoran ini mahal.'},{en:'The tickets are too expensive.',id:'Tiketnya terlalu mahal.'}]},
+    {word:'cheap',ipa:'/tʃiːp/',pos:'kata sifat',id:'Murah',ex:[{en:'This shop sells cheap clothes.',id:'Toko ini menjual pakaian murah.'},{en:'I found a cheap hotel.',id:'Saya menemukan hotel murah.'}]},
+    {word:'beautiful',ipa:'/ˈbjuːtɪfəl/',pos:'kata sifat',id:'Cantik / Indah',ex:[{en:'The view from here is beautiful.',id:'Pemandangan dari sini indah.'},{en:'She has a beautiful smile.',id:'Dia punya senyum yang cantik.'}]},
+    {word:'ugly',ipa:'/ˈʌɡli/',pos:'kata sifat',id:'Jelek',ex:[{en:'I think this design is ugly.',id:'Menurut saya desain ini jelek.'},{en:'The building looks ugly now.',id:'Bangunan itu terlihat jelek sekarang.'}]},
+    {word:'clean',ipa:'/kliːn/',pos:'kata sifat',id:'Bersih',ex:[{en:'Keep your room clean.',id:'Jaga kamarmu tetap bersih.'},{en:'The water here is very clean.',id:'Airnya di sini sangat bersih.'}]},
+    {word:'dirty',ipa:'/ˈdɜːrti/',pos:'kata sifat',id:'Kotor',ex:[{en:'Your shoes are dirty.',id:'Sepatumu kotor.'},{en:'The floor is dirty, please clean it.',id:'Lantainya kotor, tolong dibersihkan.'}]},
+    {word:'strong',ipa:'/strɔːŋ/',pos:'kata sifat',id:'Kuat',ex:[{en:'He is very strong.',id:'Dia sangat kuat.'},{en:'We need a strong team.',id:'Kami butuh tim yang kuat.'}]},
+    {word:'weak',ipa:'/wiːk/',pos:'kata sifat',id:'Lemah',ex:[{en:'I feel weak after the illness.',id:'Saya merasa lemah setelah sakit.'},{en:'The signal here is weak.',id:'Sinyal di sini lemah.'}]},
+    {word:'tall',ipa:'/tɔːl/',pos:'kata sifat',id:'Tinggi',ex:[{en:'He is very tall.',id:'Dia sangat tinggi.'},{en:'That is a tall building.',id:'Itu bangunan yang tinggi.'}]},
+    {word:'short',ipa:'/ʃɔːrt/',pos:'kata sifat',id:'Pendek',ex:[{en:'She has short hair.',id:'Dia berambut pendek.'},{en:'It was a short meeting.',id:'Itu rapat yang singkat.'}]},
+    {word:'tired',ipa:'/ˈtaɪərd/',pos:'kata sifat',id:'Lelah',ex:[{en:"I'm tired after work.",id:'Saya lelah setelah bekerja.'},{en:'You look tired today.',id:'Kamu terlihat lelah hari ini.'}]},
+  ],
+  angka:[
+    {word:'one',ipa:'/wʌn/',pos:'angka',id:'Satu',ex:[{en:'I have one brother.',id:'Saya punya satu saudara laki-laki.'},{en:'Give me one moment.',id:'Beri saya waktu sebentar.'}]},
+    {word:'two',ipa:'/tuː/',pos:'angka',id:'Dua',ex:[{en:'I need two tickets.',id:'Saya butuh dua tiket.'},{en:'There are two chairs here.',id:'Ada dua kursi di sini.'}]},
+    {word:'three',ipa:'/θriː/',pos:'angka',id:'Tiga',ex:[{en:'We waited for three hours.',id:'Kami menunggu selama tiga jam.'},{en:'She has three children.',id:'Dia punya tiga anak.'}]},
+    {word:'ten',ipa:'/ten/',pos:'angka',id:'Sepuluh',ex:[{en:'The meeting starts at ten.',id:'Rapatnya dimulai jam sepuluh.'},{en:'I bought ten apples.',id:'Saya membeli sepuluh apel.'}]},
+    {word:'hundred',ipa:'/ˈhʌndrəd/',pos:'angka',id:'Seratus',ex:[{en:'It costs one hundred dollars.',id:'Harganya seratus dolar.'},{en:'More than a hundred people came.',id:'Lebih dari seratus orang datang.'}]},
+    {word:'thousand',ipa:'/ˈθaʊzənd/',pos:'angka',id:'Seribu',ex:[{en:'The company has a thousand employees.',id:'Perusahaan itu punya seribu karyawan.'},{en:'I saved a thousand dollars.',id:'Saya menabung seribu dolar.'}]},
+    {word:'today',ipa:'/təˈdeɪ/',pos:'kata keterangan',id:'Hari ini',ex:[{en:'I feel great today.',id:'Saya merasa hebat hari ini.'},{en:'What are you doing today?',id:'Apa yang kamu lakukan hari ini?'}]},
+    {word:'tomorrow',ipa:'/təˈmɒroʊ/',pos:'kata keterangan',id:'Besok',ex:[{en:'See you tomorrow.',id:'Sampai jumpa besok.'},{en:'The meeting is tomorrow morning.',id:'Rapatnya besok pagi.'}]},
+    {word:'yesterday',ipa:'/ˈjestərdeɪ/',pos:'kata keterangan',id:'Kemarin',ex:[{en:'I met her yesterday.',id:'Saya bertemu dia kemarin.'},{en:'It rained yesterday.',id:'Kemarin hujan.'}]},
+    {word:'morning',ipa:'/ˈmɔːrnɪŋ/',pos:'kata benda',id:'Pagi',ex:[{en:'I exercise in the morning.',id:'Saya olahraga di pagi hari.'},{en:'Good morning, everyone.',id:'Selamat pagi, semuanya.'}]},
+    {word:'afternoon',ipa:'/ˌæftərˈnuːn/',pos:'kata benda',id:'Siang',ex:[{en:"Let's meet in the afternoon.",id:'Mari bertemu siang hari.'},{en:'I feel sleepy in the afternoon.',id:'Saya mengantuk di siang hari.'}]},
+    {word:'evening',ipa:'/ˈiːvnɪŋ/',pos:'kata benda',id:'Sore / Malam',ex:[{en:'We had dinner in the evening.',id:'Kami makan malam di sore hari.'},{en:'See you this evening.',id:'Sampai jumpa sore ini.'}]},
+    {word:'night',ipa:'/naɪt/',pos:'kata benda',id:'Malam',ex:[{en:'I read books at night.',id:'Saya membaca buku di malam hari.'},{en:'Good night, sleep well.',id:'Selamat malam, tidur nyenyak.'}]},
+    {word:'week',ipa:'/wiːk/',pos:'kata benda',id:'Minggu',ex:[{en:'I work five days a week.',id:'Saya bekerja lima hari seminggu.'},{en:"Next week I'm on vacation.",id:'Minggu depan saya liburan.'}]},
+    {word:'month',ipa:'/mʌnθ/',pos:'kata benda',id:'Bulan',ex:[{en:'I started this job last month.',id:'Saya mulai kerja ini bulan lalu.'},{en:'We travel every month.',id:'Kami bepergian setiap bulan.'}]},
+    {word:'year',ipa:'/jɪər/',pos:'kata benda',id:'Tahun',ex:[{en:'I have lived here for one year.',id:'Saya sudah tinggal di sini selama satu tahun.'},{en:'Happy new year!',id:'Selamat tahun baru!'}]},
+    {word:'minute',ipa:'/ˈmɪnɪt/',pos:'kata benda',id:'Menit',ex:[{en:'Wait a minute, please.',id:'Tunggu sebentar, ya.'},{en:'It takes ten minutes to walk there.',id:'Butuh sepuluh menit jalan kaki ke sana.'}]},
+    {word:'hour',ipa:'/ˈaʊər/',pos:'kata benda',id:'Jam (durasi)',ex:[{en:'The flight takes three hours.',id:'Penerbangannya memakan waktu tiga jam.'},{en:'I study for one hour every day.',id:'Saya belajar satu jam setiap hari.'}]},
+    {word:'early',ipa:'/ˈɜːrli/',pos:'kata keterangan',id:'Awal / Pagi-pagi',ex:[{en:'I wake up early every day.',id:'Saya bangun pagi-pagi setiap hari.'},{en:'We arrived early for the meeting.',id:'Kami datang lebih awal untuk rapat.'}]},
+    {word:'late',ipa:'/leɪt/',pos:'kata keterangan',id:'Terlambat',ex:[{en:"Sorry, I'm late.",id:'Maaf, saya terlambat.'},{en:"Don't be late for the interview.",id:'Jangan terlambat untuk wawancara.'}]},
+  ],
+  menengah:[
+    {word:'meeting',ipa:'/ˈmiːtɪŋ/',pos:'kata benda',id:'Rapat',ex:[{en:'We have a meeting at ten.',id:'Kami ada rapat jam sepuluh.'},{en:'The meeting was cancelled.',id:'Rapatnya dibatalkan.'}]},
+    {word:'deadline',ipa:'/ˈdedlaɪn/',pos:'kata benda',id:'Tenggat waktu',ex:[{en:'The deadline is next Friday.',id:'Tenggat waktunya Jumat depan.'},{en:'We missed the deadline.',id:'Kami melewatkan tenggat waktu.'}]},
+    {word:'project',ipa:'/ˈprɒdʒekt/',pos:'kata benda',id:'Proyek',ex:[{en:'This project is very important.',id:'Proyek ini sangat penting.'},{en:'She is leading the new project.',id:'Dia memimpin proyek baru.'}]},
+    {word:'contract',ipa:'/ˈkɒntrækt/',pos:'kata benda',id:'Kontrak',ex:[{en:'Please sign the contract here.',id:'Tolong tanda tangani kontrak di sini.'},{en:'The contract ends next month.',id:'Kontraknya berakhir bulan depan.'}]},
+    {word:'salary',ipa:'/ˈsæləri/',pos:'kata benda',id:'Gaji',ex:[{en:'My salary increased this year.',id:'Gaji saya naik tahun ini.'},{en:'They negotiated a higher salary.',id:'Mereka menegosiasikan gaji yang lebih tinggi.'}]},
+    {word:'colleague',ipa:'/ˈkɒliːɡ/',pos:'kata benda',id:'Rekan kerja',ex:[{en:'I had lunch with my colleague.',id:'Saya makan siang dengan rekan kerja saya.'},{en:'My colleagues are very supportive.',id:'Rekan-rekan kerja saya sangat suportif.'}]},
+    {word:'manager',ipa:'/ˈmænɪdʒər/',pos:'kata benda',id:'Manajer',ex:[{en:'The manager approved my request.',id:'Manajer menyetujui permintaan saya.'},{en:'She became a manager last year.',id:'Dia menjadi manajer tahun lalu.'}]},
+    {word:'experience',ipa:'/ɪkˈspɪəriəns/',pos:'kata benda',id:'Pengalaman',ex:[{en:'I have five years of experience.',id:'Saya punya pengalaman lima tahun.'},{en:'It was a great experience.',id:'Itu pengalaman yang luar biasa.'}]},
+    {word:'opportunity',ipa:'/ˌɒpərˈtjuːnəti/',pos:'kata benda',id:'Kesempatan',ex:[{en:'This is a good opportunity for you.',id:'Ini kesempatan yang bagus untukmu.'},{en:"I don't want to miss this opportunity.",id:'Saya tidak ingin melewatkan kesempatan ini.'}]},
+    {word:'decision',ipa:'/dɪˈsɪʒən/',pos:'kata benda',id:'Keputusan',ex:[{en:'We need to make a decision today.',id:'Kami perlu membuat keputusan hari ini.'},{en:'It was a difficult decision.',id:'Itu adalah keputusan yang sulit.'}]},
+    {word:'responsibility',ipa:'/rɪˌspɒnsəˈbɪləti/',pos:'kata benda',id:'Tanggung jawab',ex:[{en:'This is your responsibility now.',id:'Ini tanggung jawabmu sekarang.'},{en:'He does his job with great responsibility.',id:'Dia menjalankan pekerjaannya dengan penuh tanggung jawab.'}]},
+    {word:'achievement',ipa:'/əˈtʃiːvmənt/',pos:'kata benda',id:'Pencapaian',ex:[{en:'Graduating was a big achievement.',id:'Lulus adalah pencapaian besar.'},{en:"We celebrated the team's achievement.",id:'Kami merayakan pencapaian tim.'}]},
+    {word:'budget',ipa:'/ˈbʌdʒɪt/',pos:'kata benda',id:'Anggaran',ex:[{en:'We need to reduce the budget.',id:'Kami perlu mengurangi anggaran.'},{en:'The project is over budget.',id:'Proyeknya melebihi anggaran.'}]},
+    {word:'customer',ipa:'/ˈkʌstəmər/',pos:'kata benda',id:'Pelanggan',ex:[{en:'The customer is waiting outside.',id:'Pelanggan sedang menunggu di luar.'},{en:'We always listen to our customers.',id:'Kami selalu mendengarkan pelanggan kami.'}]},
+    {word:'negotiate',ipa:'/nɪˈɡoʊʃieɪt/',pos:'kata kerja',id:'Bernegosiasi',ex:[{en:'We will negotiate the price.',id:'Kami akan bernegosiasi soal harga.'},{en:'They negotiated for hours.',id:'Mereka bernegosiasi selama berjam-jam.'}]},
+    {word:'schedule',ipa:'/ˈskedʒuːl/',pos:'kata benda',id:'Jadwal',ex:[{en:'Please check your schedule.',id:'Tolong periksa jadwalmu.'},{en:'My schedule is very busy this week.',id:'Jadwal saya sangat padat minggu ini.'}]},
+    {word:'presentation',ipa:'/ˌprezənˈteɪʃən/',pos:'kata benda',id:'Presentasi',ex:[{en:'I have a presentation tomorrow.',id:'Saya ada presentasi besok.'},{en:'Her presentation was excellent.',id:'Presentasinya sangat bagus.'}]},
+    {word:'interview',ipa:'/ˈɪntərvjuː/',pos:'kata benda',id:'Wawancara',ex:[{en:'I have a job interview on Monday.',id:'Saya ada wawancara kerja hari Senin.'},{en:'The interview went well.',id:'Wawancaranya berjalan lancar.'}]},
+    {word:'promotion',ipa:'/prəˈmoʊʃən/',pos:'kata benda',id:'Promosi jabatan',ex:[{en:'He got a promotion last month.',id:'Dia mendapat promosi bulan lalu.'},{en:"I'm working hard for a promotion.",id:'Saya bekerja keras untuk promosi.'}]},
+    {word:'resign',ipa:'/rɪˈzaɪn/',pos:'kata kerja',id:'Mengundurkan diri',ex:[{en:'She decided to resign from her job.',id:'Dia memutuskan mengundurkan diri dari pekerjaannya.'},{en:'He resigned last week.',id:'Dia mengundurkan diri minggu lalu.'}]},
+    {word:'invoice',ipa:'/ˈɪnvɔɪs/',pos:'kata benda',id:'Faktur / Tagihan',ex:[{en:'Please send me the invoice.',id:'Tolong kirimkan fakturnya ke saya.'},{en:'The invoice was paid on time.',id:'Fakturnya dibayar tepat waktu.'}]},
+    {word:'airport',ipa:'/ˈeərpɔːrt/',pos:'kata benda',id:'Bandara',ex:[{en:'I will pick you up at the airport.',id:'Saya akan menjemputmu di bandara.'},{en:'The airport is very crowded today.',id:'Bandaranya sangat ramai hari ini.'}]},
+    {word:'passport',ipa:'/ˈpæspɔːrt/',pos:'kata benda',id:'Paspor',ex:[{en:"Don't forget your passport.",id:'Jangan lupa paspormu.'},{en:'My passport expires next year.',id:'Paspor saya kadaluarsa tahun depan.'}]},
+    {word:'luggage',ipa:'/ˈlʌɡɪdʒ/',pos:'kata benda',id:'Bagasi / Koper',ex:[{en:'Where can I check my luggage?',id:'Di mana saya bisa mengecek bagasi saya?'},{en:'I lost my luggage at the airport.',id:'Bagasi saya hilang di bandara.'}]},
+    {word:'reservation',ipa:'/ˌrezərˈveɪʃən/',pos:'kata benda',id:'Reservasi',ex:[{en:'I made a reservation for two people.',id:'Saya membuat reservasi untuk dua orang.'},{en:'Do you have a reservation?',id:'Apakah Anda punya reservasi?'}]},
+    {word:'destination',ipa:'/ˌdestɪˈneɪʃən/',pos:'kata benda',id:'Tujuan perjalanan',ex:[{en:'Our final destination is Tokyo.',id:'Tujuan akhir kami adalah Tokyo.'},{en:'What is your travel destination?',id:'Apa tujuan perjalananmu?'}]},
+    {word:'internet',ipa:'/ˈɪntərnet/',pos:'kata benda',id:'Internet',ex:[{en:'The internet is very fast here.',id:'Internetnya sangat cepat di sini.'},{en:"I don't have internet at home.",id:'Saya tidak punya internet di rumah.'}]},
+    {word:'password',ipa:'/ˈpæswɜːrd/',pos:'kata benda',id:'Kata sandi',ex:[{en:'I forgot my password.',id:'Saya lupa kata sandi saya.'},{en:'Please create a strong password.',id:'Tolong buat kata sandi yang kuat.'}]},
+    {word:'software',ipa:'/ˈsɒftweər/',pos:'kata benda',id:'Perangkat lunak',ex:[{en:'We need to update the software.',id:'Kami perlu memperbarui perangkat lunaknya.'},{en:'This software is easy to use.',id:'Perangkat lunak ini mudah digunakan.'}]},
+    {word:'device',ipa:'/dɪˈvaɪs/',pos:'kata benda',id:'Perangkat',ex:[{en:'This device needs to be charged.',id:'Perangkat ini perlu diisi daya.'},{en:'I bought a new device yesterday.',id:'Saya membeli perangkat baru kemarin.'}]},
+    {word:'download',ipa:'/ˈdaʊnloʊd/',pos:'kata kerja',id:'Mengunduh',ex:[{en:'Please download the file.',id:'Tolong unduh berkasnya.'},{en:'I downloaded the app this morning.',id:'Saya mengunduh aplikasi itu pagi ini.'}]},
+    {word:'update',ipa:'/ʌpˈdeɪt/',pos:'kata kerja',id:'Memperbarui',ex:[{en:'I need to update my resume.',id:'Saya perlu memperbarui resume saya.'},{en:'The system updates automatically.',id:'Sistemnya diperbarui secara otomatis.'}]},
+    {word:'connect',ipa:'/kəˈnekt/',pos:'kata kerja',id:'Menghubungkan',ex:[{en:'Please connect your phone to the Wi-Fi.',id:'Tolong hubungkan teleponmu ke Wi-Fi.'},{en:'This flight connects to Osaka.',id:'Penerbangan ini terhubung ke Osaka.'}]},
+    {word:'environment',ipa:'/ɪnˈvaɪrənmənt/',pos:'kata benda',id:'Lingkungan',ex:[{en:'We should protect the environment.',id:'Kita harus melindungi lingkungan.'},{en:'This is a friendly working environment.',id:'Ini lingkungan kerja yang ramah.'}]},
+    {word:'communicate',ipa:'/kəˈmjuːnɪkeɪt/',pos:'kata kerja',id:'Berkomunikasi',ex:[{en:"It's important to communicate clearly.",id:'Penting untuk berkomunikasi dengan jelas.'},{en:'We communicate by email every day.',id:'Kami berkomunikasi lewat email setiap hari.'}]},
+  ],
+  percakapan:[
+    {word:'Excuse me',ipa:'/ɪkˈskjuːz miː/',pos:'frasa',id:'Permisi',ex:[{en:'Excuse me, where is the station?',id:'Permisi, di mana stasiunnya?'},{en:'Excuse me, can I ask something?',id:'Permisi, boleh saya bertanya sesuatu?'}]},
+    {word:'Thank you very much',ipa:'/θæŋk juː ˈveri mʌtʃ/',pos:'frasa',id:'Terima kasih banyak',ex:[{en:'Thank you very much for your help.',id:'Terima kasih banyak atas bantuanmu.'},{en:'Thank you very much, see you soon.',id:'Terima kasih banyak, sampai jumpa lagi.'}]},
+    {word:"You're welcome",ipa:"/jʊər ˈwelkəm/",pos:'frasa',id:'Sama-sama',ex:[{en:'You’re welcome, anytime.',id:'Sama-sama, kapan saja.'},{en:'"Thanks!" "You\'re welcome."',id:'"Terima kasih!" "Sama-sama."'}]},
+    {word:"I'm sorry",ipa:'/aɪm ˈsɒri/',pos:'frasa',id:'Saya minta maaf',ex:[{en:'I\'m sorry for being late.',id:'Saya minta maaf karena terlambat.'},{en:"I'm sorry, I didn't understand.",id:'Maaf, saya tidak mengerti.'}]},
+    {word:'Nice to meet you',ipa:'/naɪs tuː miːt juː/',pos:'frasa',id:'Senang bertemu denganmu',ex:[{en:"Nice to meet you, I'm Willyam.",id:'Senang bertemu denganmu, saya Willyam.'},{en:'Nice to meet you too.',id:'Senang bertemu denganmu juga.'}]},
+    {word:'How are you?',ipa:'/haʊ ɑːr juː/',pos:'frasa',id:'Apa kabar?',ex:[{en:'How are you today?',id:'Apa kabarmu hari ini?'},{en:"I'm fine, how are you?",id:'Saya baik, apa kabarmu?'}]},
+    {word:"I don't understand",ipa:'/aɪ doʊnt ˌʌndərˈstænd/',pos:'frasa',id:'Saya tidak mengerti',ex:[{en:"I don't understand this sentence.",id:'Saya tidak mengerti kalimat ini.'},{en:"Sorry, I don't understand you.",id:'Maaf, saya tidak mengerti kamu.'}]},
+    {word:'Could you repeat that?',ipa:'/kʊd juː rɪˈpiːt ðæt/',pos:'frasa',id:'Bisakah kamu mengulanginya?',ex:[{en:'Could you repeat that, please?',id:'Bisakah Anda mengulanginya?'},{en:"I'm sorry, could you repeat that slowly?",id:'Maaf, bisakah Anda mengulanginya pelan-pelan?'}]},
+    {word:'What time is it?',ipa:'/wɒt taɪm ɪz ɪt/',pos:'frasa',id:'Jam berapa sekarang?',ex:[{en:'Excuse me, what time is it?',id:'Permisi, jam berapa sekarang?'},{en:'What time is it in Jakarta?',id:'Jam berapa sekarang di Jakarta?'}]},
+    {word:'See you later',ipa:'/siː juː ˈleɪtər/',pos:'frasa',id:'Sampai jumpa nanti',ex:[{en:'Okay, see you later!',id:'Oke, sampai jumpa nanti!'},{en:'See you later at the meeting.',id:'Sampai jumpa nanti di rapat.'}]},
+    {word:'Take care',ipa:'/teɪk keər/',pos:'frasa',id:'Jaga diri baik-baik',ex:[{en:'Take care and drive safely.',id:'Jaga diri dan berkendaralah dengan aman.'},{en:'Take care of yourself.',id:'Jaga dirimu baik-baik.'}]},
+    {word:'Good luck',ipa:'/ɡʊd lʌk/',pos:'frasa',id:'Semoga berhasil',ex:[{en:'Good luck with your interview.',id:'Semoga berhasil dengan wawancaramu.'},{en:'Good luck on your exam tomorrow.',id:'Semoga berhasil ujianmu besok.'}]},
+    {word:'I agree',ipa:'/aɪ əˈɡriː/',pos:'frasa',id:'Saya setuju',ex:[{en:'I agree with your idea.',id:'Saya setuju dengan idemu.'},{en:"I agree, let's do that.",id:'Saya setuju, mari kita lakukan itu.'}]},
+    {word:'I disagree',ipa:'/aɪ ˌdɪsəˈɡriː/',pos:'frasa',id:'Saya tidak setuju',ex:[{en:'I disagree with this plan.',id:'Saya tidak setuju dengan rencana ini.'},{en:'Sorry, I disagree with you.',id:'Maaf, saya tidak setuju denganmu.'}]},
+    {word:'Let me think',ipa:'/let miː θɪŋk/',pos:'frasa',id:'Biar saya pikirkan',ex:[{en:'Let me think about it.',id:'Biar saya pikirkan dulu.'},{en:'Let me think for a moment.',id:'Biar saya pikir sebentar.'}]},
+    {word:'No problem',ipa:'/noʊ ˈprɒbləm/',pos:'frasa',id:'Tidak masalah',ex:[{en:'No problem, I can help you.',id:'Tidak masalah, saya bisa membantumu.'},{en:'"Sorry for the delay." "No problem."',id:'"Maaf atas keterlambatannya." "Tidak masalah."'}]},
+    {word:'Of course',ipa:'/əv kɔːrs/',pos:'frasa',id:'Tentu saja',ex:[{en:"Of course, I'll help you.",id:'Tentu saja, saya akan membantumu.'},{en:'Can I sit here? Of course!',id:'Boleh saya duduk di sini? Tentu saja!'}]},
+    {word:"I'm not sure",ipa:'/aɪm nɒt ʃʊər/',pos:'frasa',id:'Saya tidak yakin',ex:[{en:"I'm not sure about the answer.",id:'Saya tidak yakin dengan jawabannya.'},{en:"I'm not sure, let me check.",id:'Saya tidak yakin, biar saya cek dulu.'}]},
+    {word:'Congratulations',ipa:'/kənˌɡrætʃəˈleɪʃənz/',pos:'frasa',id:'Selamat',ex:[{en:'Congratulations on your promotion!',id:'Selamat atas promosimu!'},{en:'Congratulations on your new job.',id:'Selamat atas pekerjaan barumu.'}]},
+    {word:'Welcome',ipa:'/ˈwelkəm/',pos:'frasa',id:'Selamat datang',ex:[{en:'Welcome to our company.',id:'Selamat datang di perusahaan kami.'},{en:'Welcome home!',id:'Selamat datang di rumah!'}]},
+  ],
+};
+
+// ══════════════════════════════════════════════════
+// KAMUS KATA — turunan otomatis dari VOCAB_EN
+// ══════════════════════════════════════════════════
+const WORD_LIST_EN = [];
+for (const cat in VOCAB_EN) {
+  const level = (cat === 'menengah' || cat === 'percakapan') ? 'menengah' : 'dasar';
+  VOCAB_EN[cat].forEach(w => WORD_LIST_EN.push({...w, cat, level}));
+}
+const JP_WORDS = new Set(Object.values(VOCAB).flat().map(w => w.jp));
+const EN_WORDS = new Set(WORD_LIST_EN.map(w => w.word));
+
+// ══════════════════════════════════════════════════
+// GRAMMAR BAHASA INGGRIS
+// ══════════════════════════════════════════════════
+const GRAMMAR_EN = [
+  {pattern:'Simple Present Tense',nama:'Kebiasaan & Fakta Umum',desc:'Subject + V1 (+s/es untuk he/she/it). Digunakan untuk kebiasaan, fakta umum, atau jadwal tetap.',
+   contoh:[{jp:'She works at a hospital.',id:'Dia bekerja di rumah sakit.'},{jp:'The store opens at nine every day.',id:'Toko itu buka jam sembilan setiap hari.'}]},
+  {pattern:'Simple Past Tense',nama:'Aksi Selesai di Masa Lalu',desc:'Subject + V2 (kata kerja bentuk lampau). Kata kerja beraturan ditambah -ed, kata kerja tidak beraturan berubah bentuk.',
+   contoh:[{jp:'I visited my parents last week.',id:'Saya mengunjungi orang tua saya minggu lalu.'},{jp:'She went to Japan last year.',id:'Dia pergi ke Jepang tahun lalu.'}]},
+  {pattern:'Simple Future (will / going to)',nama:'Menyatakan Masa Depan',desc:'"Will" untuk keputusan spontan atau prediksi. "Going to" untuk rencana yang sudah dipikirkan sebelumnya.',
+   contoh:[{jp:'I will call you tomorrow.',id:'Saya akan meneleponmu besok.'},{jp:'We are going to visit Osaka next month.',id:'Kami akan mengunjungi Osaka bulan depan.'}]},
+  {pattern:'Present Continuous',nama:'Sedang Berlangsung',desc:'Subject + am/is/are + V-ing. Digunakan untuk aksi yang sedang terjadi sekarang atau rencana dekat di masa depan.',
+   contoh:[{jp:'I am studying English right now.',id:'Saya sedang belajar bahasa Inggris sekarang.'},{jp:'She is meeting her manager this afternoon.',id:'Dia akan bertemu manajernya siang ini.'}]},
+  {pattern:'Articles: a / an / the',nama:'Kata Sandang',desc:'"A" dipakai sebelum kata berawalan bunyi konsonan, "an" sebelum bunyi vokal, "the" untuk benda yang sudah spesifik/diketahui.',
+   contoh:[{jp:'I saw an elephant at the zoo.',id:'Saya melihat seekor gajah di kebun binatang.'},{jp:'The book on the table is mine.',id:'Buku di atas meja itu milik saya.'}]},
+  {pattern:'Plural Nouns',nama:'Bentuk Jamak',desc:'Sebagian besar kata benda ditambah -s. Kata benda berakhiran s/x/ch/sh ditambah -es. Beberapa kata benda punya bentuk jamak tidak beraturan.',
+   contoh:[{jp:'I have two children and three cats.',id:'Saya punya dua anak dan tiga kucing.'},{jp:'There are many boxes in the room.',id:'Ada banyak kotak di ruangan itu.'}]},
+  {pattern:'Comparative & Superlative',nama:'Perbandingan',desc:'Untuk membandingkan dua hal tambahkan -er (atau "more"); untuk yang paling tambahkan -est (atau "most").',
+   contoh:[{jp:'This car is faster than that one.',id:'Mobil ini lebih cepat dari yang itu.'},{jp:'She is the most experienced employee here.',id:'Dia adalah karyawan paling berpengalaman di sini.'}]},
+  {pattern:'Prepositions: in / on / at',nama:'Kata Depan Tempat & Waktu',desc:'"In" untuk ruang/kota/bulan, "on" untuk permukaan/hari-tanggal, "at" untuk titik spesifik/jam.',
+   contoh:[{jp:'The meeting is at three o\'clock on Monday.',id:'Rapatnya jam tiga pada hari Senin.'},{jp:'I live in Jakarta.',id:'Saya tinggal di Jakarta.'}]},
+  {pattern:'Modal Verbs: can, should, must',nama:'Kata Kerja Bantu Modal',desc:'"Can" = kemampuan/izin, "should" = saran, "must" = keharusan/kewajiban kuat.',
+   contoh:[{jp:'You must wear a helmet at the factory.',id:'Anda harus memakai helm di pabrik.'},{jp:'You should rest if you feel sick.',id:'Kamu sebaiknya istirahat jika merasa sakit.'}]},
+  {pattern:'WH-Questions',nama:'Kata Tanya',desc:'What (apa), where (di mana), when (kapan), who (siapa), why (mengapa), how (bagaimana) — digunakan untuk menanyakan informasi spesifik.',
+   contoh:[{jp:'Where do you work?',id:'Di mana kamu bekerja?'},{jp:'Why were you late this morning?',id:'Mengapa kamu terlambat pagi ini?'}]},
+  {pattern:'There is / There are',nama:'Menyatakan Keberadaan',desc:'"There is" + benda tunggal, "there are" + benda jamak. Digunakan untuk menyatakan bahwa sesuatu ada di suatu tempat.',
+   contoh:[{jp:'There is a supermarket near my house.',id:'Ada supermarket dekat rumah saya.'},{jp:'There are many people at the station.',id:'Ada banyak orang di stasiun.'}]},
+  {pattern:'Countable & Uncountable (some/any)',nama:'Kata Benda Bisa/Tidak Bisa Dihitung',desc:'Kata benda bisa dihitung punya bentuk jamak (apple/apples); yang tidak bisa dihitung tidak (water, money). "Some" dipakai di kalimat positif, "any" di kalimat negatif dan tanya.',
+   contoh:[{jp:'I need some information about the job.',id:'Saya perlu beberapa informasi tentang pekerjaan itu.'},{jp:'Is there any water left?',id:'Apakah masih ada air tersisa?'}]},
+];
+
+// ══════════════════════════════════════════════════
+// QUIZ BAHASA INGGRIS
+// ══════════════════════════════════════════════════
+const QUIZ_DATA_EN = [
+  {q:"'House' artinya...",jp:'House',h:'/haʊs/',opts:['Mobil','Rumah','Sekolah','Kantor'],ans:1},
+  {q:"Bagaimana cara membaca 'work'?",jp:'work',h:'kata kerja',opts:['/wɜːrk/','/wɔːk/','/wɪk/','/wɑːrk/'],ans:0},
+  {q:"'I ___ to work every day.' (Simple Present)",jp:'I ___ to work every day.',h:'',opts:['go','goes','going','went'],ans:0},
+  {q:"'Expensive' artinya...",jp:'Expensive',h:'/ɪkˈspensɪv/',opts:['Murah','Mahal','Gratis','Baru'],ans:1},
+  {q:"Apa arti 'deadline'?",jp:'Deadline',h:'/ˈdedlaɪn/',opts:['Rapat','Gaji','Tenggat waktu','Kontrak'],ans:2},
+  {q:"'She ___ to Japan last year.' (Simple Past)",jp:'She ___ to Japan last year.',h:'',opts:['go','goes','went','going'],ans:2},
+  {q:"'Colleague' artinya...",jp:'Colleague',h:'/ˈkɒliːɡ/',opts:['Atasan','Rekan kerja','Pelanggan','Manajer'],ans:1},
+  {q:"Pilih artikel yang tepat: '___ elephant'",jp:'___ elephant',h:'',opts:['A','An','The only','No article'],ans:1},
+  {q:"'Tired' artinya...",jp:'Tired',h:'/ˈtaɪərd/',opts:['Kuat','Lelah','Bahagia','Sedih'],ans:1},
+  {q:"'There ___ many people at the station.'",jp:'There ___ many people at the station.',h:'',opts:['is','are','be','was'],ans:1},
+  {q:"'Passport' artinya...",jp:'Passport',h:'/ˈpæspɔːrt/',opts:['Tiket','Paspor','Koper','Visa'],ans:1},
+  {q:"'This car is ___ than that one.' (fast)",jp:'This car is ___ than that one.',h:'',opts:['fast','faster','fastest','more fast'],ans:1},
+  {q:"Apa arti 'negotiate'?",jp:'Negotiate',h:'/nɪˈɡoʊʃieɪt/',opts:['Menolak','Bernegosiasi','Menyetujui','Membatalkan'],ans:1},
+  {q:"'You ___ wear a helmet at the factory.' (keharusan)",jp:'You ___ wear a helmet at the factory.',h:'',opts:['can','should','must','may'],ans:2},
+  {q:"'Understand' artinya...",jp:'Understand',h:'/ˌʌndərˈstænd/',opts:['Melupakan','Mengingat','Mengerti','Menjawab'],ans:2},
+  {q:"'___ do you work?' (menanyakan tempat)",jp:'___ do you work?',h:'',opts:['What','Where','When','Who'],ans:1},
+  {q:"'Congratulations' artinya...",jp:'Congratulations',h:'/kənˌɡrætʃəˈleɪʃənz/',opts:['Maaf','Selamat','Terima kasih','Sama-sama'],ans:1},
+  {q:"'I am ___ English right now.' (Present Continuous)",jp:'I am ___ English right now.',h:'',opts:['study','studies','studying','studied'],ans:2},
+  {q:"'Achievement' artinya...",jp:'Achievement',h:'/əˈtʃiːvmənt/',opts:['Kegagalan','Pencapaian','Tantangan','Kesalahan'],ans:1},
+  {q:"'I need ___ information about the job.' (positif)",jp:'I need ___ information about the job.',h:'',opts:['some','any','a','an'],ans:0},
 ];
 
 // ══════════════════════════════════════════════════
@@ -1385,14 +1641,15 @@ async function loadProgress() {
       learnedK = data.learned_katakana || [];
       learnedD = data.learned_dakuon || [];
       learnedVocab = data.learned_vocab || {};
-      userProgress = { xp: data.xp || 0, quizDone: data.quiz_done || 0 };
+      learnedGrammar = data.learned_grammar || {};
+      userProgress = { xp: data.xp || 0, quizDone: data.quiz_done || 0, quizDoneEN: data.quiz_done_en || 0 };
     } else {
-      userProgress = { xp: 0, quizDone: 0 };
+      userProgress = { xp: 0, quizDone: 0, quizDoneEN: 0 };
       await saveProgress();
     }
   } catch(err) {
     console.warn('loadProgress gagal:', err);
-    userProgress = { xp: 0, quizDone: 0 };
+    userProgress = { xp: 0, quizDone: 0, quizDoneEN: 0 };
   }
 }
 async function saveProgress() {
@@ -1402,8 +1659,10 @@ async function saveProgress() {
     await db.collection('user_progress').doc(currentUser.uid).set({
       learned_hiragana: learnedH, learned_katakana: learnedK,
       learned_dakuon: learnedD, learned_vocab: learnedVocab,
+      learned_grammar: learnedGrammar,
       xp: userProgress.xp || 0,
       quiz_done: userProgress.quizDone || 0,
+      quiz_done_en: userProgress.quizDoneEN || 0,
       display_name: name, email: currentUser.email,
       last_login: firebase.firestore.FieldValue.serverTimestamp()
     });
@@ -1454,26 +1713,86 @@ function updateStats() {
     'Streak ke-' + streak + ' · kumpulkan ' + nextThreshold.toLocaleString() + ' XP total';
   document.getElementById('mob-streak-badge').textContent = '🔥 ' + streak;
 
-  // ── Stats dashboard ──
-  const kana = learnedH.length + learnedK.length + learnedD.length;
-  document.getElementById('stat-kana').textContent = kana;
-  const vocabLearned = Object.values(learnedVocab).filter(v => v >= 2).length;
-  document.getElementById('stat-vocab').textContent = vocabLearned;
+  // ── Vocab counts (per bahasa) ──
+  const learnedEntries = Object.entries(learnedVocab).filter(([k,v]) => v >= 2);
+  const vocabJPCount = learnedEntries.filter(([k]) => JP_WORDS.has(k)).length;
+  const vocabENCount = learnedEntries.filter(([k]) => EN_WORDS.has(k)).length;
 
-  const hp = Math.round(learnedH.length / 46 * 100);
-  const kp = Math.round(learnedK.length / 46 * 100);
-  const dTotal = DAKUON_DATA.dakuon.items.length + DAKUON_DATA.handakuon.items.length + DAKUON_DATA.youon.items.length;
-  const dp = Math.round(learnedD.length / dTotal * 100);
-  const vp = Math.round(vocabLearned / 60 * 100);
+  if (currentLang === 'jp') {
+    const kana = learnedH.length + learnedK.length + learnedD.length;
+    document.getElementById('stat-kana-label').textContent = 'Kana dihafalkan';
+    document.getElementById('stat-kana').textContent = kana;
+    document.getElementById('stat-vocab').textContent = vocabJPCount;
 
-  document.getElementById('mod-h-pct').textContent = hp + '%';
-  document.getElementById('mod-k-pct').textContent = kp + '%';
-  document.getElementById('mod-d-pct').textContent = dp + '%';
-  document.getElementById('mod-v-pct').textContent = vp + '%';
-  document.getElementById('mod-h-bar').style.width = hp + '%';
-  document.getElementById('mod-k-bar').style.width = kp + '%';
-  document.getElementById('mod-d-bar').style.width = dp + '%';
-  document.getElementById('mod-v-bar').style.width = Math.min(vp, 100) + '%';
+    const hp = Math.round(learnedH.length / 46 * 100);
+    const kp = Math.round(learnedK.length / 46 * 100);
+    const dTotal = DAKUON_DATA.dakuon.items.length + DAKUON_DATA.handakuon.items.length + DAKUON_DATA.youon.items.length;
+    const dp = Math.round(learnedD.length / dTotal * 100);
+    const vp = Math.round(vocabJPCount / 60 * 100);
+
+    document.getElementById('mod-h-pct').textContent = hp + '%';
+    document.getElementById('mod-k-pct').textContent = kp + '%';
+    document.getElementById('mod-d-pct').textContent = dp + '%';
+    document.getElementById('mod-v-pct').textContent = vp + '%';
+    document.getElementById('mod-h-bar').style.width = hp + '%';
+    document.getElementById('mod-k-bar').style.width = kp + '%';
+    document.getElementById('mod-d-bar').style.width = dp + '%';
+    document.getElementById('mod-v-bar').style.width = Math.min(vp, 100) + '%';
+  } else {
+    const grammarLearnedCount = GRAMMAR_EN.filter(g => learnedGrammar[g.pattern]).length;
+    document.getElementById('stat-kana-label').textContent = 'Grammar dipahami';
+    document.getElementById('stat-kana').textContent = grammarLearnedCount + '/' + GRAMMAR_EN.length;
+    document.getElementById('stat-vocab').textContent = vocabENCount;
+
+    const dasarWords = [...VOCAB_EN.dasar, ...VOCAB_EN.kerja, ...VOCAB_EN.sifat, ...VOCAB_EN.angka];
+    const dasarLearned = dasarWords.filter(w => (learnedVocab[w.word] || 0) >= 2).length;
+    const menWords = [...VOCAB_EN.menengah, ...VOCAB_EN.percakapan];
+    const menLearned = menWords.filter(w => (learnedVocab[w.word] || 0) >= 2).length;
+    const dp2 = Math.round(dasarLearned / dasarWords.length * 100);
+    const mp2 = Math.round(menLearned / menWords.length * 100);
+    const gp2 = Math.round(grammarLearnedCount / GRAMMAR_EN.length * 100);
+    const qp2 = Math.min(100, Math.round((userProgress.quizDoneEN || 0) / 10 * 100));
+
+    document.getElementById('mod-en-dasar-pct').textContent = dp2 + '%';
+    document.getElementById('mod-en-menengah-pct').textContent = mp2 + '%';
+    document.getElementById('mod-en-grammar-pct').textContent = gp2 + '%';
+    document.getElementById('mod-en-quiz-pct').textContent = qp2 + '%';
+    document.getElementById('mod-en-dasar-bar').style.width = dp2 + '%';
+    document.getElementById('mod-en-menengah-bar').style.width = mp2 + '%';
+    document.getElementById('mod-en-grammar-bar').style.width = gp2 + '%';
+    document.getElementById('mod-en-quiz-bar').style.width = qp2 + '%';
+  }
+}
+
+// ══════════════════════════════════════════════════
+// BAHASA (Jepang ⇄ Inggris)
+// ══════════════════════════════════════════════════
+function setLanguage(lang) {
+  currentLang = lang;
+  localStorage.setItem('nihongo_lang', lang);
+  document.documentElement.setAttribute('data-lang', lang);
+  document.getElementById('lang-btn-jp').classList.toggle('active', lang === 'jp');
+  document.getElementById('lang-btn-en').classList.toggle('active', lang === 'en');
+
+  const pagesByLang = {
+    jp: ['dashboard','hiragana','katakana','dakuon','flashcard','grammar','quiz','kamus','leaderboard'],
+    en: ['dashboard','flashcard','grammar','quiz','kamus_en','leaderboard']
+  };
+  const activePage = document.querySelector('.page.active');
+  const activeId = activePage ? activePage.id.replace('page-', '') : 'dashboard';
+  if (!pagesByLang[lang].includes(activeId)) {
+    nav('dashboard', document.getElementById('nav-dashboard'));
+  }
+
+  fcCategory = lang === 'en' ? 'dasar' : 'kerja';
+  fcIndex = 0;
+  buildFcCats();
+  loadFc();
+  buildGrammar();
+  startQuiz();
+  if (lang === 'jp') { buildKamusCats(); renderKanji(); }
+  else { buildWordCats(); renderWords(); }
+  updateStats();
 }
 
 // ══════════════════════════════════════════════════
@@ -1553,33 +1872,49 @@ function toggleDaku(char, el) {
 // FLASHCARD
 // ══════════════════════════════════════════════════
 function buildFcCats() {
-  const cats = { kerja: 'Kosakata Kerja', sehari: 'Sehari-hari', angka: 'Angka & Waktu', percakapan: 'Percakapan' };
+  const cats = currentLang === 'en' ? EN_CATS : JP_CATS;
   document.getElementById('fc-cats').innerHTML = Object.entries(cats).map(([k, v]) =>
     `<button class="cat-pill ${k === fcCategory ? 'active' : ''}" onclick="setFcCat('${k}',this)">${v}</button>`
   ).join('');
 }
 function setFcCat(cat, el) {
-  fcCategory = cat; fcCards = [...VOCAB[cat]]; fcIndex = 0;
+  fcCategory = cat; fcIndex = 0;
   document.querySelectorAll('.cat-pill').forEach(b => b.classList.remove('active'));
   el.classList.add('active'); loadFc();
 }
 function loadFc() {
   fcFlipped = false;
+  const source = currentLang === 'en' ? VOCAB_EN[fcCategory] : VOCAB[fcCategory];
+  fcCards = source;
+  if (fcIndex >= fcCards.length) fcIndex = 0;
   const c = fcCards[fcIndex];
   const card = document.getElementById('fc-card');
   card.classList.remove('flipped');
-  document.getElementById('fc-kanji').textContent = c.jp;
-  document.getElementById('fc-kanji-back').textContent = c.jp;
-  document.getElementById('fc-hiragana').textContent = c.h;
-  document.getElementById('fc-katakana').textContent = c.k;
-  document.getElementById('fc-romaji').textContent = c.r;
-  document.getElementById('fc-meaning').textContent = c.id;
-  document.getElementById('fc-ex-jp').textContent = c.ex.jp;
-  document.getElementById('fc-ex-rom').textContent = c.ex.h + ' / ' + c.ex.r;
-  document.getElementById('fc-ex-id').textContent = c.ex.id;
   document.getElementById('fc-btns').style.display = 'none';
-  const catLabel = {kerja:'Kosakata Kerja',sehari:'Sehari-hari',angka:'Angka',percakapan:'Percakapan'}[fcCategory];
-  document.getElementById('fc-prog').textContent = `Kartu ${fcIndex + 1} dari ${fcCards.length} — ${catLabel}`;
+
+  if (currentLang === 'jp') {
+    document.getElementById('fc-kanji').textContent = c.jp;
+    document.getElementById('fc-kanji-back').textContent = c.jp;
+    document.getElementById('fc-hiragana').textContent = c.h;
+    document.getElementById('fc-katakana').textContent = c.k;
+    document.getElementById('fc-romaji').textContent = c.r;
+    document.getElementById('fc-meaning').textContent = c.id;
+    document.getElementById('fc-ex-jp').textContent = c.ex.jp;
+    document.getElementById('fc-ex-rom').textContent = c.ex.h + ' / ' + c.ex.r;
+    document.getElementById('fc-ex-id').textContent = c.ex.id;
+    document.getElementById('fc-prog').textContent = `Kartu ${fcIndex + 1} dari ${fcCards.length} — ${JP_CATS[fcCategory]}`;
+  } else {
+    document.getElementById('fc-kanji').textContent = c.word;
+    document.getElementById('fc-kanji-back').textContent = c.word;
+    document.getElementById('fc-hiragana').textContent = c.pos;
+    document.getElementById('fc-katakana').textContent = c.ipa;
+    document.getElementById('fc-romaji').textContent = '';
+    document.getElementById('fc-meaning').textContent = c.id;
+    document.getElementById('fc-ex-jp').textContent = c.ex[0].en;
+    document.getElementById('fc-ex-rom').textContent = c.ex[1] ? c.ex[1].en : '';
+    document.getElementById('fc-ex-id').textContent = c.ex[1] ? (c.ex[0].id + ' · ' + c.ex[1].id) : c.ex[0].id;
+    document.getElementById('fc-prog').textContent = `Card ${fcIndex + 1} of ${fcCards.length} — ${EN_CATS[fcCategory]}`;
+  }
 }
 function flipCard() {
   if (fcFlipped) return;
@@ -1588,7 +1923,8 @@ function flipCard() {
   document.getElementById('fc-btns').style.display = 'flex';
 }
 function answer(score) {
-  const word = fcCards[fcIndex].jp;
+  const c = fcCards[fcIndex];
+  const word = currentLang === 'en' ? c.word : c.jp;
   learnedVocab[word] = Math.max(learnedVocab[word] || 0, score);
   if (score >= 2) userProgress.xp = (userProgress.xp || 0) + 10;
   else if (score === 1) userProgress.xp = (userProgress.xp || 0) + 3;
@@ -1611,10 +1947,27 @@ function answer(score) {
 // ══════════════════════════════════════════════════
 // GRAMMAR
 // ══════════════════════════════════════════════════
+function toggleGrammarLearned(pattern, el) {
+  if (learnedGrammar[pattern]) {
+    delete learnedGrammar[pattern];
+    el.classList.remove('learned');
+    el.textContent = '○ Tandai paham';
+  } else {
+    learnedGrammar[pattern] = true;
+    el.classList.add('learned');
+    el.textContent = '✓ Sudah paham';
+    userProgress.xp = (userProgress.xp || 0) + 5;
+  }
+  updateStats(); scheduleSave();
+}
 function buildGrammar() {
-  document.getElementById('grammar-list').innerHTML = GRAMMAR.map(g => `
+  const data = currentLang === 'en' ? GRAMMAR_EN : GRAMMAR_JP;
+  document.getElementById('grammar-list').innerHTML = data.map(g => `
     <div class="grammar-item">
-      <div class="grammar-pattern">${g.pattern}</div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap">
+        <div class="grammar-pattern">${g.pattern}</div>
+        <button class="grammar-learn-btn ${learnedGrammar[g.pattern] ? 'learned' : ''}" onclick="toggleGrammarLearned(${JSON.stringify(g.pattern)},this)">${learnedGrammar[g.pattern] ? '✓ Sudah paham' : '○ Tandai paham'}</button>
+      </div>
       <div class="grammar-label">Nama pola</div>
       <div style="font-size:13px;font-weight:700;margin-bottom:8px">${g.nama}</div>
       <div class="grammar-label">Penjelasan</div>
@@ -1622,8 +1975,8 @@ function buildGrammar() {
       <div class="grammar-label" style="margin-top:10px">Contoh kalimat</div>
       ${g.contoh.map(c => `<div class="grammar-example">
         <div class="grammar-ex-jp">${c.jp}</div>
-        <div class="grammar-ex-kana">${c.kana}</div>
-        <div class="grammar-ex-rom">${c.r}</div>
+        ${c.kana ? `<div class="grammar-ex-kana">${c.kana}</div>` : ''}
+        ${c.r ? `<div class="grammar-ex-rom">${c.r}</div>` : ''}
         <div class="grammar-ex-id">${c.id}</div>
       </div>`).join('')}
     </div>`).join('');
@@ -1633,7 +1986,8 @@ function buildGrammar() {
 // QUIZ
 // ══════════════════════════════════════════════════
 function startQuiz() {
-  quizQuestions = [...QUIZ_DATA].sort(() => Math.random() - .5).slice(0, 10);
+  const pool = currentLang === 'en' ? QUIZ_DATA_EN : QUIZ_DATA_JP;
+  quizQuestions = [...pool].sort(() => Math.random() - .5).slice(0, 10);
   quizIndex = 0; quizScore = 0; showQuestion();
 }
 function showQuestion() {
@@ -1666,6 +2020,7 @@ function showResult() {
   const msg = pct >= 80 ? 'Luar biasa! 🎉' : pct >= 60 ? 'Bagus! Terus semangat 💪' : 'Ayo belajar lebih giat 📚';
   userProgress.xp = (userProgress.xp || 0) + quizScore * 10;
   userProgress.quizDone = (userProgress.quizDone || 0) + 1;
+  if (currentLang === 'en') userProgress.quizDoneEN = (userProgress.quizDoneEN || 0) + 1;
   updateStats(); saveProgress();
   document.getElementById('quiz-area').innerHTML = `
     <div class="card" style="text-align:center;padding:30px">
@@ -1687,7 +2042,7 @@ function buildKamusCats() {
 }
 function setKanjiFilter(cat, el) {
   kanjiFilter = cat;
-  document.querySelectorAll('.kf-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('#kanji-filter .kf-btn').forEach(b => b.classList.remove('active'));
   el.classList.add('active'); renderKanji();
 }
 function filterKanji() { kanjiSearch = document.getElementById('kanji-search').value.toLowerCase(); renderKanji(); }
@@ -1713,6 +2068,10 @@ function renderKanji() {
 }
 function openKanjiModal(idx) {
   const k = KANJI_LIST[idx];
+  document.getElementById('modal-char').style.fontSize = '';
+  document.getElementById('modal-label-on').textContent = 'On-yomi';
+  document.getElementById('modal-label-kun').textContent = 'Kun-yomi';
+  document.getElementById('modal-label-stroke').textContent = 'Stroke';
   document.getElementById('modal-char').textContent = k.k;
   document.getElementById('modal-meaning').textContent = k.m;
   document.getElementById('modal-on').textContent = k.on;
@@ -1729,6 +2088,60 @@ function openKanjiModal(idx) {
 function closeModal(e) {
   if (e.target === document.getElementById('kanji-modal'))
     document.getElementById('kanji-modal').classList.remove('show');
+}
+
+// ══════════════════════════════════════════════════
+// KAMUS KATA (Inggris)
+// ══════════════════════════════════════════════════
+function buildWordCats() {
+  const cats = ['semua','dasar','kerja','sifat','angka','menengah','percakapan'];
+  const labels = {semua:'semua',dasar:'benda',kerja:'kerja',sifat:'sifat',angka:'angka & waktu',menengah:'menengah',percakapan:'percakapan'};
+  document.getElementById('word-filter').innerHTML = cats.map(c =>
+    `<button class="kf-btn ${c === wordFilter ? 'active' : ''}" onclick="setWordFilter('${c}',this)">${labels[c]}</button>`
+  ).join('');
+}
+function setWordFilter(cat, el) {
+  wordFilter = cat;
+  document.querySelectorAll('#word-filter .kf-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active'); renderWords();
+}
+function filterWordsInput() { wordSearch = document.getElementById('word-search').value.toLowerCase(); renderWords(); }
+function renderWords() {
+  let filtered = WORD_LIST_EN;
+  if (wordFilter !== 'semua') filtered = filtered.filter(w => w.cat === wordFilter);
+  if (wordSearch) filtered = filtered.filter(w =>
+    w.word.toLowerCase().includes(wordSearch) || w.id.toLowerCase().includes(wordSearch)
+  );
+  document.getElementById('word-grid').innerHTML = filtered.map(w => `
+    <div class="kanji-card" onclick="openWordModal(${WORD_LIST_EN.indexOf(w)})">
+      <div class="kanji-char" style="font-size:22px;font-weight:800">${w.word}</div>
+      <div class="kanji-info">
+        <div class="kanji-meaning">${w.id}</div>
+        <div class="kanji-readings">
+          <span class="kanji-reading-label">Kelas</span><span class="kanji-on">${w.pos}</span><br>
+          <span class="kanji-reading-label">Ucap</span><span class="kanji-kun">${w.ipa}</span>
+        </div>
+        <div class="kanji-example-mini">${w.ex[0].en} — ${w.ex[0].id}</div>
+      </div>
+    </div>`).join('');
+}
+function openWordModal(idx) {
+  const w = WORD_LIST_EN[idx];
+  document.getElementById('modal-char').style.fontSize = '46px';
+  document.getElementById('modal-label-on').textContent = 'Kelas kata';
+  document.getElementById('modal-label-kun').textContent = 'Pengucapan';
+  document.getElementById('modal-label-stroke').textContent = 'Level';
+  document.getElementById('modal-char').textContent = w.word;
+  document.getElementById('modal-meaning').textContent = w.id;
+  document.getElementById('modal-on').textContent = w.pos;
+  document.getElementById('modal-kun').textContent = w.ipa;
+  document.getElementById('modal-stroke').textContent = w.level === 'menengah' ? 'Menengah' : 'Dasar';
+  document.getElementById('modal-examples').innerHTML = w.ex.map(e => `
+    <div class="grammar-example" style="margin-top:8px">
+      <div class="grammar-ex-jp">${e.en}</div>
+      <div class="grammar-ex-id">${e.id}</div>
+    </div>`).join('');
+  document.getElementById('kanji-modal').classList.add('show');
 }
 
 // ══════════════════════════════════════════════════
@@ -1776,24 +2189,16 @@ async function initApp(user) {
     buildKanaGrid(HIRAGANA, 'hiragana-grid', 'H', learnedH);
     buildKanaGrid(KATAKANA, 'katakana-grid', 'K', learnedK);
     buildDakuon();
-    fcCards = [...VOCAB[fcCategory]];
-    buildFcCats(); loadFc();
-    buildGrammar();
-    startQuiz();
-    buildKamusCats(); renderKanji();
+    setLanguage(localStorage.getItem('nihongo_lang') || 'jp');
     showScreen('app');
   } catch(err) {
     console.error('initApp error:', err);
-    userProgress = { xp: 0, quizDone: 0 };
+    userProgress = { xp: 0, quizDone: 0, quizDoneEN: 0 };
     updateSidebarUser();
     buildKanaGrid(HIRAGANA, 'hiragana-grid', 'H', learnedH);
     buildKanaGrid(KATAKANA, 'katakana-grid', 'K', learnedK);
     buildDakuon();
-    fcCards = [...VOCAB[fcCategory]];
-    buildFcCats(); loadFc();
-    buildGrammar();
-    startQuiz();
-    buildKamusCats(); renderKanji();
+    setLanguage(localStorage.getItem('nihongo_lang') || 'jp');
     showScreen('app');
   }
 }
